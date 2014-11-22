@@ -31,7 +31,6 @@ type Cache struct {
 	Time      time.Time
 }
 
-// usage: ./alfred-toggl COMMAND "QUERY"
 func main() {
 	workflow, err := alfred.OpenWorkflow(".", true)
 	if err != nil {
@@ -56,35 +55,21 @@ func main() {
 	err = alfred.LoadJson(cacheFile, &cache)
 	log.Println("loaded cache")
 
-	var filters []alfred.Filter
-	var actions []alfred.Action
-
-	if config.ApiKey == "" {
-		filters = []alfred.Filter{
-			LoginCommand{},
-		}
-		actions = []alfred.Action{
-			LoginCommand{},
-		}
-	} else {
-		filters = []alfred.Filter{
-			TimerFilter{},
-			ProjectsFilter{},
-			TagsFilter{},
-			ReportFilter{},
-			SyncFilter{},
-			LogoutCommand{},
-		}
-		actions = []alfred.Action{
-			StartAction{},
-			UpdateTimerAction{},
-			ToggleAction{},
-			DeleteAction{},
-			LogoutCommand{},
-		}
+	commands := []alfred.Command{
+		LoginCommand{},
+		TimerFilter{},
+		ProjectsFilter{},
+		TagsFilter{},
+		ReportFilter{},
+		SyncFilter{},
+		LogoutCommand{},
+		StartAction{},
+		UpdateTimerAction{},
+		ToggleAction{},
+		DeleteAction{},
 	}
 
-	workflow.Run(filters, actions)
+	workflow.Run(commands)
 }
 
 // login -------------------------------------------------
@@ -93,6 +78,10 @@ type LoginCommand struct{}
 
 func (c LoginCommand) Keyword() string {
 	return "login"
+}
+
+func (c LoginCommand) IsEnabled() bool {
+	return config.ApiKey == ""
 }
 
 func (c LoginCommand) MenuItem() alfred.Item {
@@ -144,12 +133,16 @@ func (c LoginCommand) Do(query string) (string, error) {
 	return "", nil
 }
 
-// clear -------------------------------------------------
+// logout ------------------------------------------------
 
 type LogoutCommand struct{}
 
 func (c LogoutCommand) Keyword() string {
 	return "logout"
+}
+
+func (c LogoutCommand) IsEnabled() bool {
+	return config.ApiKey != ""
 }
 
 func (c LogoutCommand) MenuItem() alfred.Item {
@@ -183,6 +176,10 @@ type TimerFilter struct{}
 
 func (c TimerFilter) Keyword() string {
 	return "timer"
+}
+
+func (c TimerFilter) IsEnabled() bool {
+	return config.ApiKey != ""
 }
 
 func (c TimerFilter) MenuItem() alfred.Item {
@@ -456,6 +453,10 @@ func (c ProjectsFilter) Keyword() string {
 	return "projects"
 }
 
+func (c ProjectsFilter) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
 func (c ProjectsFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
@@ -554,6 +555,10 @@ func (c TagsFilter) Keyword() string {
 	return "tags"
 }
 
+func (c TagsFilter) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
 func (c TagsFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
@@ -585,6 +590,10 @@ type ReportFilter struct{}
 
 func (c ReportFilter) Keyword() string {
 	return "report"
+}
+
+func (c ReportFilter) IsEnabled() bool {
+	return config.ApiKey != ""
 }
 
 func (c ReportFilter) MenuItem() alfred.Item {
@@ -672,6 +681,10 @@ func (c SyncFilter) Keyword() string {
 	return "sync"
 }
 
+func (c SyncFilter) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
 func (c SyncFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
@@ -694,6 +707,10 @@ type ToggleAction struct{}
 
 func (c ToggleAction) Keyword() string {
 	return "toggle"
+}
+
+func (c ToggleAction) IsEnabled() bool {
+	return config.ApiKey != ""
 }
 
 func (c ToggleAction) Do(query string) (string, error) {
@@ -749,6 +766,10 @@ type startMessage struct {
 
 type StartAction struct{}
 
+func (c StartAction) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
 func (c StartAction) Keyword() string {
 	return "start"
 }
@@ -794,6 +815,10 @@ func (c UpdateTimerAction) Keyword() string {
 	return "update-timer"
 }
 
+func (c UpdateTimerAction) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
 func (c UpdateTimerAction) Do(query string) (string, error) {
 	log.Printf("update-timer %s", query)
 
@@ -832,6 +857,10 @@ type DeleteAction struct{}
 
 func (c DeleteAction) Keyword() string {
 	return "delete"
+}
+
+func (c DeleteAction) IsEnabled() bool {
+	return config.ApiKey != ""
 }
 
 func (c DeleteAction) Do(query string) (string, error) {
