@@ -3,6 +3,8 @@ alfred-toggl
 
 An Alfred workflow for accessing the Toggl time-tracking service
 
+![Screenshot](/workflow/screenshot.png?raw=true)
+
 Installation
 ------------
 
