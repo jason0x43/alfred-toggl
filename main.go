@@ -20,6 +20,7 @@ var cacheFile string
 var configFile string
 var config Config
 var cache Cache
+var workflow *alfred.Workflow
 
 type Config struct {
 	ApiKey string `json:"api_key"`
@@ -32,7 +33,9 @@ type Cache struct {
 }
 
 func main() {
-	workflow, err := alfred.OpenWorkflow(".", true)
+	var err error
+
+	workflow, err = alfred.OpenWorkflow(".", true)
 	if err != nil {
 		fmt.Printf("Error: %s", err)
 		os.Exit(1)
@@ -100,7 +103,7 @@ func (c LoginCommand) Items(prefix, query string) ([]alfred.Item, error) {
 }
 
 func (c LoginCommand) Do(query string) (string, error) {
-	btn, username, err := alfred.GetInput("Toggl", "Username", "", false)
+	btn, username, err := workflow.GetInput("Username", "", false)
 	if err != nil {
 		return "", err
 	}
@@ -111,7 +114,7 @@ func (c LoginCommand) Do(query string) (string, error) {
 	}
 	log.Printf("username: %s", username)
 
-	btn, password, err := alfred.GetInput("Toggl", "Password", "", true)
+	btn, password, err := workflow.GetInput("Password", "", true)
 	if btn != "Ok" {
 		log.Println("User didn't click OK")
 		return "", nil
@@ -129,7 +132,7 @@ func (c LoginCommand) Do(query string) (string, error) {
 		return "", err
 	}
 
-	alfred.ShowMessage("Toggl", "Login successful!")
+	workflow.ShowMessage("Login successful!")
 	return "", nil
 }
 
@@ -166,7 +169,7 @@ func (c LogoutCommand) Do(query string) (string, error) {
 		return "", err
 	}
 
-	alfred.ShowMessage("Toggl", "You are now logged out of Toggl")
+	workflow.ShowMessage("You are now logged out of Toggl")
 	return "", nil
 }
 
@@ -875,7 +878,7 @@ func (c DeleteAction) Do(query string) (string, error) {
 			entry := &accountData.TimeEntries[i]
 			if entry.Id == id {
 				prompt := fmt.Sprintf("Are you sure you want to delete '%s'?", entry.Description)
-				yes, _ := alfred.GetConfirmation("Confirm", prompt, false)
+				yes, _ := workflow.GetConfirmation(prompt, false)
 
 				if yes {
 					log.Printf("Deleting\n")
