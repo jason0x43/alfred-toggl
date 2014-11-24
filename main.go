@@ -189,6 +189,7 @@ func (c TimerFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
+		Valid:        alfred.INVALID,
 		SubtitleAll:  "List and modify recent time entries, add new ones",
 	}
 }
@@ -464,6 +465,7 @@ func (c ProjectsFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
+		Valid:        alfred.INVALID,
 		SubtitleAll:  "List your projects, add new ones",
 	}
 }
@@ -566,6 +568,7 @@ func (c TagsFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
+		Valid:        alfred.INVALID,
 		SubtitleAll:  "List your tags",
 	}
 }
@@ -603,6 +606,7 @@ func (c ReportFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
+		Valid:        alfred.INVALID,
 		SubtitleAll:  "Generate summary reports",
 	}
 }
