@@ -189,7 +189,7 @@ func (c TimerFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
-		Valid:        alfred.INVALID,
+		Valid:        alfred.Invalid,
 		SubtitleAll:  "List and modify recent time entries, add new ones",
 	}
 }
@@ -216,20 +216,21 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 		addItem := func(title, subtitle, keyword string, hasNext, showSubtitle bool) {
 			item := alfred.Item{
 				Title:        title,
-				Autocomplete: prefix + parts[0] + alfred.SEPARATOR + " " + keyword}
+				Autocomplete: prefix + parts[0] + alfred.Separator + " " + keyword,
+			}
 
 			if showSubtitle {
 				item.Subtitle = subtitle
 			}
 
 			if hasNext {
-				item.Autocomplete += alfred.SEPARATOR + " "
+				item.Autocomplete += alfred.Separator + " "
 			}
 
 			if len(parts) > 2 {
 				item.Arg = parts[2]
 			} else {
-				item.Valid = alfred.INVALID
+				item.Valid = alfred.Invalid
 			}
 
 			items = append(items, item)
@@ -260,8 +261,8 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 			if len(parts) > 2 {
 				var matches func(string, string) bool
 				name := parts[2]
-				complete := prefix + parts[0] + alfred.SEPARATOR + " " + "Project" + alfred.SEPARATOR + " "
-				terminator := strings.Index(parts[2], alfred.TERMINATOR)
+				complete := prefix + parts[0] + alfred.Separator + " " + "Project" + alfred.Separator + " "
+				terminator := strings.Index(parts[2], alfred.Terminator)
 
 				if terminator != -1 {
 					name = name[:terminator]
@@ -276,7 +277,8 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 					if matches(proj.Name, name) {
 						items = append(items, alfred.Item{
 							Title:        proj.Name,
-							Autocomplete: complete + proj.Name + alfred.TERMINATOR})
+							Autocomplete: complete + proj.Name + alfred.Terminator,
+						})
 					}
 				}
 			} else {
@@ -298,8 +300,8 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 
 			item := alfred.Item{
 				Title:        "Start: " + startTime,
-				Valid:        alfred.INVALID,
-				Autocomplete: prefix + parts[0] + alfred.SEPARATOR + " Start" + alfred.SEPARATOR + " ",
+				Valid:        alfred.Invalid,
+				Autocomplete: prefix + parts[0] + alfred.Separator + " Start" + alfred.Separator + " ",
 			}
 
 			if property == "start" {
@@ -351,8 +353,8 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 
 				item := alfred.Item{
 					Title:        fmt.Sprintf("Duration: %.2f", duration),
-					Valid:        alfred.INVALID,
-					Autocomplete: prefix + parts[0] + alfred.SEPARATOR + " Duration" + alfred.SEPARATOR + " ",
+					Valid:        alfred.Invalid,
+					Autocomplete: prefix + parts[0] + alfred.Separator + " Duration" + alfred.Separator + " ",
 				}
 
 				if property == "duration" {
@@ -385,7 +387,7 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 			item := alfred.Item{
 				Title:        "Delete",
 				Arg:          fmt.Sprintf("delete %d", timer.Id),
-				Autocomplete: prefix + parts[0] + alfred.SEPARATOR + " Delete",
+				Autocomplete: prefix + parts[0] + alfred.Separator + " Delete",
 			}
 
 			if property == "delete" {
@@ -434,7 +436,7 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 					Title:        entry.Description,
 					SubtitleAll:  subtitle,
 					Arg:          fmt.Sprintf("toggle %v", entry.Id),
-					Autocomplete: prefix + fmt.Sprintf("%d%s ", entry.Id, alfred.SEPARATOR),
+					Autocomplete: prefix + fmt.Sprintf("%d%s ", entry.Id, alfred.Separator),
 				}
 
 				if entry.IsRunning() {
@@ -465,7 +467,7 @@ func (c ProjectsFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
-		Valid:        alfred.INVALID,
+		Valid:        alfred.Invalid,
 		SubtitleAll:  "List your projects, add new ones",
 	}
 }
@@ -505,7 +507,7 @@ func (c ProjectsFilter) Items(prefix, query string) ([]alfred.Item, error) {
 
 		for _, entry := range timers {
 			if alfred.FuzzyMatches(entry.Description, timerName) {
-				addItem(entry.Description, "", prefix+projectName+alfred.SEPARATOR+" "+entry.Description)
+				addItem(entry.Description, "", prefix+projectName+alfred.Separator+" "+entry.Description)
 			}
 		}
 
@@ -537,8 +539,8 @@ func (c ProjectsFilter) Items(prefix, query string) ([]alfred.Item, error) {
 			item := alfred.Item{
 				Title:        entry.title,
 				SubtitleAll:  entry.subtitle,
-				Valid:        alfred.INVALID,
-				Autocomplete: prefix + entry.title + alfred.SEPARATOR + " ",
+				Valid:        alfred.Invalid,
+				Autocomplete: prefix + entry.title + alfred.Separator + " ",
 			}
 
 			if isRunning && runningTimer.Pid == entry.id {
@@ -568,7 +570,7 @@ func (c TagsFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
-		Valid:        alfred.INVALID,
+		Valid:        alfred.Invalid,
 		SubtitleAll:  "List your tags",
 	}
 }
@@ -606,7 +608,7 @@ func (c ReportFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
-		Valid:        alfred.INVALID,
+		Valid:        alfred.Invalid,
 		SubtitleAll:  "Generate summary reports",
 	}
 }
@@ -619,33 +621,33 @@ func (c ReportFilter) Items(prefix, query string) ([]alfred.Item, error) {
 
 	log.Printf("tell report with query '%s'", query)
 
-	var since string
-	var until string
+	var since time.Time
+	var until time.Time
 	var span string
 	parts := alfred.SplitAndTrimQuery(query)
 
 	if parts[0] == "today" {
-		since = toIsoDateString(time.Now())
-		until = since
+		since = toDayStart(time.Now())
+		until = toDayEnd(since)
 		span = "today"
 	} else if parts[0] == "yesterday" {
-		since = toIsoDateString(time.Now().AddDate(0, 0, -1))
-		until = since
+		since = toDayStart(time.Now().AddDate(0, 0, -1))
+		until = toDayEnd(since)
 		span = "yesterday"
 	} else if parts[0] == "this week" {
 		start := time.Now()
 		if start.Weekday() >= 1 {
 			delta := 1 - int(start.Weekday())
-			since = toIsoDateString(start.AddDate(0, 0, delta))
-			until = toIsoDateString(time.Now())
+			since = toDayStart(start.AddDate(0, 0, delta))
+			until = toDayEnd(time.Now())
 		}
 		span = "this week"
 	} else {
 		for _, value := range []string{"today", "yesterday", "this week"} {
 			if alfred.FuzzyMatches(value, query) {
 				items = append(items, alfred.Item{
-					Valid:        alfred.INVALID,
-					Autocomplete: prefix + span + value + alfred.SEPARATOR + " ",
+					Valid:        alfred.Invalid,
+					Autocomplete: prefix + span + value + alfred.Separator + " ",
 					Title:        value,
 					SubtitleAll:  "Generate a report for " + value,
 				})
@@ -654,7 +656,7 @@ func (c ReportFilter) Items(prefix, query string) ([]alfred.Item, error) {
 
 		if len(items) == 0 {
 			items = append(items, alfred.Item{
-				Valid: alfred.INVALID,
+				Valid: alfred.Invalid,
 				Title: "Enter a valid date or range",
 			})
 		}
@@ -662,7 +664,7 @@ func (c ReportFilter) Items(prefix, query string) ([]alfred.Item, error) {
 		return items, nil
 	}
 
-	if since != "" && until != "" {
+	if !since.IsZero() && !until.IsZero() {
 		reportItems, err := createReportItems(prefix, parts, since, until)
 		if err != nil {
 			return items, err
@@ -673,7 +675,7 @@ func (c ReportFilter) Items(prefix, query string) ([]alfred.Item, error) {
 	if len(items) == 0 {
 		items = append(items, alfred.Item{
 			Title: "No entries",
-			Valid: alfred.INVALID,
+			Valid: alfred.Invalid,
 		})
 	}
 
@@ -1022,7 +1024,7 @@ func getLatestTimerForProject(pid int) []toggl.TimeEntry {
 	return matchedArr
 }
 
-func createReportItems(prefix string, parts []string, since, until string) ([]alfred.Item, error) {
+func createReportItems(prefix string, parts []string, since, until time.Time) ([]alfred.Item, error) {
 	var items []alfred.Item
 
 	report, err := generateReport(since, until)
@@ -1044,7 +1046,7 @@ func createReportItems(prefix string, parts []string, since, until string) ([]al
 			name = parts[1]
 		}
 
-		terminator := strings.Index(name, alfred.TERMINATOR)
+		terminator := strings.Index(name, alfred.Terminator)
 		if terminator != -1 {
 			name := name[:terminator]
 
@@ -1062,7 +1064,7 @@ func createReportItems(prefix string, parts []string, since, until string) ([]al
 
 			for _, entry := range project.entries {
 				item := alfred.Item{
-					Valid:       alfred.INVALID,
+					Valid:       alfred.Invalid,
 					Title:       entry.description,
 					SubtitleAll: fmt.Sprintf("%.2f", float32(entry.total)/100.0)}
 
@@ -1081,10 +1083,11 @@ func createReportItems(prefix string, parts []string, since, until string) ([]al
 				entryTitle := project.name
 				if alfred.FuzzyMatches(entryTitle, name) {
 					item := alfred.Item{
-						Valid:        alfred.INVALID,
-						Autocomplete: prefix + span + alfred.SEPARATOR + " " + entryTitle + alfred.TERMINATOR,
+						Valid:        alfred.Invalid,
+						Autocomplete: prefix + span + alfred.Separator + " " + entryTitle + alfred.Terminator,
 						Title:        entryTitle,
-						SubtitleAll:  fmt.Sprintf("%.2f", float32(project.total)/100.0)}
+						SubtitleAll:  fmt.Sprintf("%.2f", float32(project.total)/100.0),
+					}
 
 					if project.running {
 						item.Icon = "running.png"
@@ -1105,9 +1108,10 @@ func createReportItems(prefix string, parts []string, since, until string) ([]al
 		if totalName != "" {
 			item := alfred.Item{
 				Title:        fmt.Sprintf("Total hours %s: %.2f", totalName, float32(total)/100.0),
-				Valid:        alfred.INVALID,
-				Autocomplete: prefix + strings.Join(parts, alfred.SEPARATOR+" "),
-				SubtitleAll:  alfred.LINE}
+				Valid:        alfred.Invalid,
+				Autocomplete: prefix + strings.Join(parts, alfred.Separator+" "),
+				SubtitleAll:  alfred.Line,
+			}
 			items = alfred.InsertItem(items, item, 0)
 		}
 	}
@@ -1115,19 +1119,19 @@ func createReportItems(prefix string, parts []string, since, until string) ([]al
 	return items, nil
 }
 
-func generateReport(since string, until string) (*summaryReport, error) {
+func generateReport(since, until time.Time) (*summaryReport, error) {
 	log.Printf("Generating report from %s to %s", since, until)
 
 	report := summaryReport{projects: map[string]*projectEntry{}}
 	projects := getProjectsById()
 
 	for _, entry := range cache.Account.Data.TimeEntries {
-		var start string
+		var start time.Time
 		if entry.Start != nil {
-			start = entry.Start.Format("2006-01-02")
+			start = *entry.Start
 		}
 
-		if start >= since && start <= until {
+		if !start.Before(since) && !until.Before(start) {
 			var projectName string
 
 			if entry.Pid == 0 {
@@ -1172,6 +1176,18 @@ func generateReport(since string, until string) (*summaryReport, error) {
 	}
 
 	return &report, nil
+}
+
+// return a datetime at the minimum time on the given date
+func toDayStart(date time.Time) time.Time {
+	date = date.In(time.Local)
+	return time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.Local)
+}
+
+// return a datetime at the maximum time on the given date
+func toDayEnd(date time.Time) time.Time {
+	date = date.In(time.Local)
+	return time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, time.Local)
 }
 
 // is date1's date before date2's date
