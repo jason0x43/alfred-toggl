@@ -186,7 +186,9 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>This workflow allows the user to interact with the Toggl time tracking service. It can be used to create timers and projects; start, stop, and adjust timers; and generate reports for recent timespans.</string>
+	<string>Version: 1.0.1
+
+This workflow allows the user to interact with the Toggl time tracking service. It can be used to create timers and projects; start, stop, and adjust timers; and generate reports for recent timespans.</string>
 	<key>uidata</key>
 	<dict>
 		<key>0647B0B4-6734-48A1-BF61-031D41D2A35D</key>
