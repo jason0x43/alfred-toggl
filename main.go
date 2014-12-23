@@ -294,7 +294,7 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 
 		if alfred.FuzzyMatches("start", property) {
 			var startTime string
-			if timer.Start != nil {
+			if !timer.Start.IsZero() {
 				startTime = timer.Start.Local().Format("15:04")
 			}
 
@@ -320,7 +320,7 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 
 					updateTimer := toggl.TimeEntry{
 						Id:    timer.Id,
-						Start: &newStart,
+						Start: newStart,
 					}
 
 					if !timer.IsRunning() {
@@ -414,18 +414,20 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 
 				startTime := entry.Start
 				if entry.Duration < 0 {
-					seconds = int(time.Now().Sub(*startTime).Seconds())
+					seconds = int(time.Now().Sub(startTime).Seconds())
 				} else {
 					seconds = entry.Duration
 				}
 
 				duration := float32(roundDuration(seconds)) / 100.0
-				subtitle := fmt.Sprintf("%.2f, %s from ", duration, toHumanDateString(*startTime))
+				subtitle := fmt.Sprintf("%.2f, %s from ", duration, toHumanDateString(startTime))
 				subtitle += startTime.Local().Format("3:04pm") + " to "
 				if entry.Duration < 0 {
 					subtitle += "now"
-				} else {
+				} else if !entry.Stop.IsZero() {
 					subtitle += entry.Stop.Local().Format("3:04pm")
+				} else {
+					log.Printf("No duration or stop time")
 				}
 
 				if project, ok := projects[entry.Pid]; ok {
@@ -1009,7 +1011,7 @@ func getLatestTimerForProject(pid int) []toggl.TimeEntry {
 	for _, entry := range timers {
 		if entry.Pid == pid {
 			e, ok := matched[entry.Description]
-			if !ok || (entry.Start != nil && e.Start != nil && entry.Start.After(*e.Start)) {
+			if !ok || (!entry.Start.IsZero() && !e.Start.IsZero() && entry.Start.After(e.Start)) {
 				matched[entry.Description] = entry
 			}
 		}
@@ -1127,8 +1129,8 @@ func generateReport(since, until time.Time) (*summaryReport, error) {
 
 	for _, entry := range cache.Account.Data.TimeEntries {
 		var start time.Time
-		if entry.Start != nil {
-			start = *entry.Start
+		if !entry.Start.IsZero() {
+			start = entry.Start
 		}
 
 		if !start.Before(since) && !until.Before(start) {
@@ -1153,7 +1155,7 @@ func generateReport(since, until time.Time) (*summaryReport, error) {
 			duration := entry.Duration
 
 			if duration < 0 {
-				duration = int(time.Now().Sub(*entry.Start).Seconds())
+				duration = int(time.Now().Sub(entry.Start).Seconds())
 				project.running = true
 			}
 
@@ -1270,12 +1272,12 @@ func (b byTime) Swap(i, j int) {
 }
 
 func (b byTime) Less(i, j int) bool {
-	if b[i].Start == nil {
+	if b[i].Start.IsZero() {
 		return true
-	} else if b[j].Start == nil {
+	} else if b[j].Start.IsZero() {
 		return false
 	} else {
-		return b[i].Start.Before(*b[j].Start)
+		return b[i].Start.Before(b[j].Start)
 	}
 }
 
