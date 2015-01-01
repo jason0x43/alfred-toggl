@@ -60,16 +60,22 @@ func main() {
 
 	commands := []alfred.Command{
 		LoginCommand{},
-		TimerFilter{},
-		ProjectsFilter{},
-		TagsFilter{},
+		TimeEntryFilter{},
+		ProjectFilter{},
+		TagFilter{},
 		ReportFilter{},
 		SyncFilter{},
 		LogoutCommand{},
+		ResetCommand{},
 		StartAction{},
-		UpdateTimerAction{},
+		UpdateTimeEntryAction{},
+		UpdateProjectAction{},
+		CreateProjectAction{},
+		UpdateTagAction{},
+		CreateTagAction{},
 		ToggleAction{},
 		DeleteAction{},
+		TagAction{},
 	}
 
 	workflow.Run(commands)
@@ -103,7 +109,7 @@ func (c LoginCommand) Items(prefix, query string) ([]alfred.Item, error) {
 }
 
 func (c LoginCommand) Do(query string) (string, error) {
-	btn, username, err := workflow.GetInput("Username", "", false)
+	btn, username, err := workflow.GetInput("Email address", "", false)
 	if err != nil {
 		return "", err
 	}
@@ -152,7 +158,7 @@ func (c LogoutCommand) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword(),
-		SubtitleAll:  "Logout of Toggl",
+		SubtitleAll:  "Logout of Toggl, but keep any local config",
 	}
 }
 
@@ -173,19 +179,58 @@ func (c LogoutCommand) Do(query string) (string, error) {
 	return "", nil
 }
 
-// timers ------------------------------------------------
+// reset -------------------------------------------------
 
-type TimerFilter struct{}
+type ResetCommand struct{}
 
-func (c TimerFilter) Keyword() string {
-	return "timer"
+func (c ResetCommand) Keyword() string {
+	return "reset"
 }
 
-func (c TimerFilter) IsEnabled() bool {
+func (c ResetCommand) IsEnabled() bool {
 	return config.ApiKey != ""
 }
 
-func (c TimerFilter) MenuItem() alfred.Item {
+func (c ResetCommand) MenuItem() alfred.Item {
+	return alfred.Item{
+		Title:        c.Keyword(),
+		Autocomplete: c.Keyword(),
+		SubtitleAll:  "Reset this workflow, erasing all local data",
+	}
+}
+
+func (c ResetCommand) Items(prefix, query string) ([]alfred.Item, error) {
+	item := c.MenuItem()
+	item.Arg = "reset"
+	return []alfred.Item{item}, nil
+}
+
+func (c ResetCommand) Do(query string) (string, error) {
+	err1 := os.Remove(configFile)
+	err2 := os.Remove(cacheFile)
+
+	if err1 != nil || err2 != nil {
+		workflow.ShowMessage("One or more data files could not be removed")
+	} else {
+		workflow.ShowMessage("Workflow data cleared")
+	}
+
+	return "", nil
+}
+
+// time entries ------------------------------------------
+
+type TimeEntryFilter struct{}
+
+func (c TimeEntryFilter) Keyword() string {
+	return "entries"
+}
+
+func (c TimeEntryFilter) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
+func (c TimeEntryFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
@@ -194,7 +239,7 @@ func (c TimerFilter) MenuItem() alfred.Item {
 	}
 }
 
-func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error) {
+func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err error) {
 	if err = checkRefresh(); err != nil {
 		return items, err
 	}
@@ -205,7 +250,7 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 	if err != nil {
 		id = 0
 	}
-	timer, ok := findTimerById(id)
+	entry, ok := findTimerById(id)
 
 	if ok {
 		var property string
@@ -237,31 +282,32 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 		}
 
 		if alfred.FuzzyMatches("description", property) {
-			if len(parts) > 2 && parts[2] != "" {
-				updateTimer := toggl.TimeEntry{
-					Id:          timer.Id,
-					Description: parts[2],
-				}
+			subcommand := "description"
 
-				dataString, _ := json.Marshal(updateTimer)
+			if len(parts) > 2 && parts[2] != "" {
+				updateEntry := entry
+				updateEntry.Description = parts[2]
+				dataString, _ := json.Marshal(updateEntry)
 
 				item := alfred.Item{
-					Title:    "Description: " + parts[2],
+					Title:    subcommand + ": " + parts[2],
 					Subtitle: "Change description",
-					Arg:      "update-timer " + string(dataString),
+					Arg:      "update-entry " + string(dataString),
 				}
 
 				items = append(items, item)
 			} else {
-				addItem("Description: "+timer.Description, "Change description", "Description", true, property == "description")
+				addItem(subcommand+": "+entry.Description, "Change description", subcommand, true, property == "description")
 			}
 		}
 
 		if alfred.FuzzyMatches("project", property) {
+			subcommand := "project"
+
 			if len(parts) > 2 {
 				var matches func(string, string) bool
 				name := parts[2]
-				complete := prefix + parts[0] + alfred.Separator + " " + "Project" + alfred.Separator + " "
+				complete := prefix + parts[0] + alfred.Separator + " " + subcommand + alfred.Separator + " "
 				terminator := strings.Index(parts[2], alfred.Terminator)
 
 				if terminator != -1 {
@@ -282,36 +328,74 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 					}
 				}
 			} else {
-				title := "Project: "
-				if project, ok := projects[timer.Pid]; ok {
+				title := subcommand + ": "
+				if project, ok := projects[entry.Pid]; ok {
 					title += project.Name
 				} else {
 					title += "<None>"
 				}
-				addItem(title, "Change project", "Project", true, property == "project")
+				addItem(title, "Change project", subcommand, true, property == "project")
+			}
+		}
+
+		if alfred.FuzzyMatches("tags", property) {
+			subcommand := "tags"
+
+			if len(parts) > 2 {
+				// We have the "tags" subcommand followed by a query
+				for _, tag := range cache.Account.Data.Tags {
+					if alfred.FuzzyMatches(tag.Name, parts[2]) {
+						title := tag.Name
+						icon := ""
+						data := tagMessage{Tag: tag.Name, TimeEntry: entry.Id, Add: true}
+
+						if entry.HasTag(tag.Name) {
+							data.Add = false
+							icon = "running.png"
+						}
+
+						dataString, _ := json.Marshal(data)
+						items = append(items, alfred.Item{
+							Title: title,
+							Arg:   "tag " + string(dataString),
+							Icon:  icon,
+						})
+					}
+				}
+			} else {
+				// We have a fuzzy match for the "tags" subcommand
+				title := subcommand + ": "
+				if len(entry.Tags) > 0 {
+					title += strings.Join(entry.Tags, ", ")
+				} else {
+					title += "<None>"
+				}
+				addItem(title, "Change tags", subcommand, true, property == "tags")
 			}
 		}
 
 		if alfred.FuzzyMatches("start", property) {
+			subcommand := "start"
+
 			var startTime string
-			if !timer.Start.IsZero() {
-				startTime = timer.Start.Local().Format("15:04")
+			if !entry.Start.IsZero() {
+				startTime = entry.Start.Local().Format("15:04")
 			}
 
 			item := alfred.Item{
-				Title:        "Start: " + startTime,
+				Title:        subcommand + ": " + startTime,
 				Valid:        alfred.Invalid,
-				Autocomplete: prefix + parts[0] + alfred.Separator + " Start" + alfred.Separator + " ",
+				Autocomplete: prefix + parts[0] + alfred.Separator + " " + subcommand + alfred.Separator + " ",
 			}
 
-			if property == "start" {
+			if property == subcommand {
 				item.Subtitle = "Change start time"
 			}
 
 			if len(parts) > 2 && parts[2] != "" {
 				newTime, err := time.Parse("15:04", parts[2])
 				if err == nil {
-					originalStart := timer.Start.Local()
+					originalStart := entry.Start.Local()
 					originalMinutes := originalStart.Hour()*60 + originalStart.Minute()
 					newMinutes := newTime.Hour()*60 + newTime.Minute()
 
@@ -319,20 +403,20 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 					newStart := originalStart.Add(delta)
 
 					updateTimer := toggl.TimeEntry{
-						Id:    timer.Id,
-						Start: newStart,
+						Id:    entry.Id,
+						Start: &newStart,
 					}
 
-					if !timer.IsRunning() {
-						updateTimer.Duration = timer.Duration
+					if !entry.IsRunning() {
+						updateTimer.Duration = entry.Duration
 					}
 
 					dataString, _ := json.Marshal(updateTimer)
-					log.Printf("marshaled timer to: %s\n", dataString)
+					log.Printf("marshaled entry to: %s\n", dataString)
 
-					item.Title = "Start: " + parts[2]
+					item.Title = subcommand + ": " + parts[2]
 					item.Subtitle = "Press enter to change start time (end time will also be adjusted)"
-					item.Arg = "update-timer " + string(dataString)
+					item.Arg = "update-entry " + string(dataString)
 					item.Valid = ""
 				} else {
 					log.Printf("Invalid time: %s\n", parts[2])
@@ -342,22 +426,24 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 			items = append(items, item)
 		}
 
-		if !timer.IsRunning() {
+		if !entry.IsRunning() {
 			if alfred.FuzzyMatches("stop", property) {
-				stopTime := timer.Stop
-				addItem("Stop: "+stopTime.Local().Format("15:04"), "", "Stop", false, false)
+				subcommand := "stop"
+				stopTime := entry.Stop
+				addItem(subcommand+": "+stopTime.Local().Format("15:04"), "", subcommand, false, false)
 			}
 
 			if alfred.FuzzyMatches("duration", property) {
-				duration := float32(timer.Duration) / 60.0 / 60.0
+				subcommand := "duration"
+				duration := float32(entry.Duration) / 60.0 / 60.0
 
 				item := alfred.Item{
-					Title:        fmt.Sprintf("Duration: %.2f", duration),
+					Title:        fmt.Sprintf("%s: %.2f", subcommand, duration),
 					Valid:        alfred.Invalid,
-					Autocomplete: prefix + parts[0] + alfred.Separator + " Duration" + alfred.Separator + " ",
+					Autocomplete: prefix + parts[0] + alfred.Separator + " " + subcommand + alfred.Separator + " ",
 				}
 
-				if property == "duration" {
+				if property == subcommand {
 					item.Subtitle = "Change duration (end time will be adjusted)"
 				}
 
@@ -365,16 +451,16 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 					val, err := strconv.ParseFloat(parts[2], 64)
 					if err == nil {
 						updateTimer := toggl.TimeEntry{
-							Id:       timer.Id,
+							Id:       entry.Id,
 							Duration: int(val * 60 * 60),
 						}
 
 						dataString, _ := json.Marshal(updateTimer)
-						log.Printf("marshaled timer to: %s\n", dataString)
+						log.Printf("marshaled entry to: %s\n", dataString)
 
-						item.Title = fmt.Sprintf("Duration: %.2f", val)
+						item.Title = fmt.Sprintf("%s: %.2f", subcommand, val)
 						item.Subtitle = "Press enter to change duration (end time will be adjusted)"
-						item.Arg = "update-timer " + string(dataString)
+						item.Arg = "update-entry " + string(dataString)
 						item.Valid = ""
 					}
 				}
@@ -384,35 +470,39 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 		}
 
 		if alfred.FuzzyMatches("delete", property) {
+			subcommand := "delete"
+			data := deleteMessage{Type: "time entry", Id: entry.Id}
+			dataString, _ := json.Marshal(data)
+
 			item := alfred.Item{
-				Title:        "Delete",
-				Arg:          fmt.Sprintf("delete %d", timer.Id),
-				Autocomplete: prefix + parts[0] + alfred.Separator + " Delete",
+				Title:        subcommand,
+				Arg:          "delete " + string(dataString),
+				Autocomplete: prefix + parts[0] + alfred.Separator + " " + subcommand,
 			}
 
-			if property == "delete" {
+			if property == subcommand {
 				item.Subtitle = "Delete this time entry"
 			}
 
 			items = append(items, item)
 		}
 	} else {
-		timers := getTimersForQuery(parts[0])
+		entries := getTimeEntriesForQuery(parts[0])
 
-		if len(timers) == 0 {
+		if len(entries) == 0 {
 			data := startMessage{Description: parts[0]}
 			dataString, _ := json.Marshal(data)
 
 			items = append(items, alfred.Item{
 				Title:       parts[0],
-				SubtitleAll: "New timer",
+				SubtitleAll: "New entry",
 				Arg:         "start " + string(dataString),
 			})
 		} else {
-			for _, entry := range timers {
+			for _, entry := range entries {
 				var seconds int
 
-				startTime := entry.Start
+				startTime := entry.StartTime()
 				if entry.Duration < 0 {
 					seconds = int(time.Now().Sub(startTime).Seconds())
 				} else {
@@ -455,17 +545,17 @@ func (c TimerFilter) Items(prefix, query string) (items []alfred.Item, err error
 
 // projects ----------------------------------------------
 
-type ProjectsFilter struct{}
+type ProjectFilter struct{}
 
-func (c ProjectsFilter) Keyword() string {
+func (c ProjectFilter) Keyword() string {
 	return "projects"
 }
 
-func (c ProjectsFilter) IsEnabled() bool {
+func (c ProjectFilter) IsEnabled() bool {
 	return config.ApiKey != ""
 }
 
-func (c ProjectsFilter) MenuItem() alfred.Item {
+func (c ProjectFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
@@ -474,47 +564,114 @@ func (c ProjectsFilter) MenuItem() alfred.Item {
 	}
 }
 
-func (c ProjectsFilter) Items(prefix, query string) ([]alfred.Item, error) {
+func (c ProjectFilter) Items(prefix, query string) ([]alfred.Item, error) {
 	var items []alfred.Item
 	if err := checkRefresh(); err != nil {
 		return items, err
 	}
 
 	parts := alfred.SplitAndTrimQuery(query)
+	log.Printf("parts: %s", parts)
+
+	projectName := parts[0]
+	project, _ := findProjectByName(projectName)
 
 	if len(parts) > 1 {
-		// list timers and let user start a new one
-		projectName := parts[0]
-		project, _ := findProjectByName(projectName)
-		timerName := parts[1]
-		timers := getLatestTimerForProject(project.Id)
+		subcommand := parts[1]
+		log.Printf("subcommand: " + subcommand)
 
-		addItem := func(title, subtitle, autocomplete string) {
-			data := startMessage{
-				Pid:         project.Id,
-				Description: title,
+		switch subcommand {
+		case "entries":
+			// list time entries and let user start a new one
+			var timerName string
+			if len(parts) > 2 {
+				timerName = parts[2]
 			}
 
-			dataString, _ := json.Marshal(data)
+			prefix += projectName + alfred.Separator + " entries" + alfred.Separator
+			entries := getLatestTimeEntriesForProject(project.Id)
 
-			item := alfred.Item{
-				Title:        title,
-				SubtitleAll:  subtitle,
-				Autocomplete: autocomplete,
-				Arg:          "start " + string(dataString),
+			addItem := func(title, subtitle, autocomplete string) {
+				data := startMessage{
+					Pid:         project.Id,
+					Description: title,
+				}
+
+				dataString, _ := json.Marshal(data)
+
+				item := alfred.Item{
+					Title:        title,
+					SubtitleAll:  subtitle,
+					Autocomplete: autocomplete,
+					Arg:          "start " + string(dataString),
+				}
+				log.Println("arg:", item.Arg)
+				items = append(items, item)
 			}
-			log.Println("arg:", item.Arg)
-			items = append(items, item)
-		}
 
-		for _, entry := range timers {
-			if alfred.FuzzyMatches(entry.Description, timerName) {
-				addItem(entry.Description, "", prefix+projectName+alfred.Separator+" "+entry.Description)
+			for _, entry := range entries {
+				if alfred.FuzzyMatches(entry.Description, timerName) {
+					addItem(entry.Description, "", prefix+" "+entry.Description)
+				}
 			}
-		}
 
-		if len(items) == 0 && parts[1] != "" {
-			addItem(timerName, "New timer for "+projectName, "")
+			if len(items) == 0 && timerName != "" {
+				addItem(timerName, "New timer for "+projectName, "")
+			}
+
+			if len(items) == 0 {
+				if timerName != "" {
+					addItem(timerName, "New timer for "+projectName, "")
+				} else {
+					items = append(items, alfred.Item{Title: "No time entries"})
+				}
+			}
+		case "name":
+			name := projectName
+			arg := ""
+			if len(parts) > 2 && parts[2] != "" {
+				name = parts[2]
+				updateProject := project
+				updateProject.Name = name
+				dataString, _ := json.Marshal(updateProject)
+				arg = "update-project " + string(dataString)
+			}
+			items = append(items, alfred.Item{
+				Title: "name: " + name,
+				Arg:   arg,
+			})
+		default:
+			if alfred.FuzzyMatches("entries", subcommand) {
+				items = append(items, alfred.Item{
+					Title:        "entries",
+					Autocomplete: prefix + project.Name + alfred.Separator + " entries" + alfred.Separator + " ",
+					Valid:        alfred.Invalid,
+				})
+			}
+			if alfred.FuzzyMatches("name", subcommand) {
+				items = append(items, alfred.Item{
+					Title:        "name",
+					Autocomplete: prefix + project.Name + alfred.Separator + " name" + alfred.Separator + " ",
+					Valid:        alfred.Invalid,
+				})
+			}
+			if alfred.FuzzyMatches("delete", subcommand) {
+				data := deleteMessage{Type: "project", Id: project.Id}
+				dataString, _ := json.Marshal(data)
+
+				items = append(items, alfred.Item{
+					Title:        "delete",
+					Arg:          "delete " + string(dataString),
+					Autocomplete: prefix + project.Name + alfred.Separator + " delete",
+				})
+			}
+
+			if len(items) == 0 {
+				items = append(items, alfred.Item{
+					Title: fmt.Sprintf("Unknown keyword '%s'", subcommand),
+					Valid: alfred.Invalid,
+				})
+			}
 		}
 	} else {
 		// list projects
@@ -534,22 +691,37 @@ func (c ProjectsFilter) Items(prefix, query string) ([]alfred.Item, error) {
 			}
 		}
 
-		sort.Sort(sort.Reverse(byMatchId(matchEntries)))
-		sort.Stable(sort.Reverse(byBestMatch(matchEntries)))
+		if len(matchEntries) == 0 && query != "" {
+			data := createProjectMessage{Name: parts[0]}
+			dataString, _ := json.Marshal(data)
 
-		for _, entry := range matchEntries {
-			item := alfred.Item{
-				Title:        entry.title,
-				SubtitleAll:  entry.subtitle,
-				Valid:        alfred.Invalid,
-				Autocomplete: prefix + entry.title + alfred.Separator + " ",
+			items = append(items, alfred.Item{
+				Title:       parts[0],
+				SubtitleAll: "New project",
+				Arg:         "create-project " + string(dataString),
+			})
+		} else {
+			sort.Sort(sort.Reverse(byMatchId(matchEntries)))
+			sort.Stable(sort.Reverse(byBestMatch(matchEntries)))
+
+			for _, entry := range matchEntries {
+				item := alfred.Item{
+					Title:        entry.title,
+					SubtitleAll:  entry.subtitle,
+					Valid:        alfred.Invalid,
+					Autocomplete: prefix + entry.title + alfred.Separator + " ",
+				}
+
+				if isRunning && runningTimer.Pid == entry.id {
+					item.Icon = "running.png"
+				}
+
+				items = append(items, item)
 			}
+		}
 
-			if isRunning && runningTimer.Pid == entry.id {
-				item.Icon = "running.png"
-			}
-
-			items = append(items, item)
+		if len(items) == 0 {
+			items = append(items, alfred.Item{Title: "No matching projects"})
 		}
 	}
 
@@ -558,17 +730,17 @@ func (c ProjectsFilter) Items(prefix, query string) ([]alfred.Item, error) {
 
 // tags --------------------------------------------------
 
-type TagsFilter struct{}
+type TagFilter struct{}
 
-func (c TagsFilter) Keyword() string {
+func (c TagFilter) Keyword() string {
 	return "tags"
 }
 
-func (c TagsFilter) IsEnabled() bool {
+func (c TagFilter) IsEnabled() bool {
 	return config.ApiKey != ""
 }
 
-func (c TagsFilter) MenuItem() alfred.Item {
+func (c TagFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
@@ -577,20 +749,105 @@ func (c TagsFilter) MenuItem() alfred.Item {
 	}
 }
 
-func (c TagsFilter) Items(prefix, query string) ([]alfred.Item, error) {
+func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
 	var items []alfred.Item
 	if err := checkRefresh(); err != nil {
 		return items, err
 	}
 
-	for _, entry := range cache.Account.Data.Tags {
-		if alfred.FuzzyMatches(entry.Name, query) {
+	parts := alfred.SplitAndTrimQuery(query)
+	log.Printf("parts: %d", len(parts))
+
+	if len(parts) > 1 {
+		tag, found := findTagByName(parts[0])
+		if !found {
+			items = append(items, alfred.Item{Title: "Invalid tag '" + parts[0] + "'"})
+		}
+
+		prefix += tag.Name + alfred.Separator
+		subcommand := parts[1]
+
+		switch subcommand {
+		case "entries":
+			// list time entries with this tag
+			entries := getLatestTimeEntriesForTag(tag.Name)
+			if len(entries) == 0 {
+				items = append(items, alfred.Item{
+					Title: "No time entries",
+					Valid: alfred.Invalid,
+				})
+			} else {
+				for _, entry := range entries {
+					items = append(items, alfred.Item{
+						Title: entry.Description,
+						Valid: alfred.Invalid,
+					})
+				}
+			}
+
+		case "name":
+			name := tag.Name
+			arg := ""
+			if len(parts) > 2 && parts[2] != "" {
+				name = parts[2]
+				updateTag := tag
+				updateTag.Name = name
+				dataString, _ := json.Marshal(updateTag)
+				arg = "update-tag " + string(dataString)
+			}
 			items = append(items, alfred.Item{
-				Title:        entry.Name,
-				Autocomplete: prefix + entry.Name,
+				Title: "name: " + name,
+				Arg:   arg,
+			})
+		default:
+			if alfred.FuzzyMatches("entries", subcommand) {
+				items = append(items, alfred.Item{
+					Title:        "entries",
+					Autocomplete: prefix + " entries",
+					Valid:        alfred.Invalid,
+				})
+			}
+			if alfred.FuzzyMatches("name", subcommand) {
+				items = append(items, alfred.Item{
+					Title:        "name",
+					Autocomplete: prefix + " name" + alfred.Separator + " ",
+					Valid:        alfred.Invalid,
+				})
+			}
+			if alfred.FuzzyMatches("delete", subcommand) {
+				data := deleteMessage{Type: "tag", Id: tag.Id}
+				dataString, _ := json.Marshal(data)
+
+				items = append(items, alfred.Item{
+					Title:        "delete",
+					Autocomplete: prefix + " delete",
+					Arg:          "delete " + string(dataString),
+				})
+			}
+		}
+	} else {
+		for _, entry := range cache.Account.Data.Tags {
+			if alfred.FuzzyMatches(entry.Name, query) {
+				items = append(items, alfred.Item{
+					Title:        entry.Name,
+					Autocomplete: prefix + entry.Name + alfred.Separator + " ",
+					Valid:        alfred.Invalid,
+				})
+			}
+		}
+
+		if len(items) == 0 {
+			data := createTagMessage{Name: parts[0]}
+			dataString, _ := json.Marshal(data)
+
+			items = append(items, alfred.Item{
+				Title:       parts[0],
+				SubtitleAll: "New tag",
+				Arg:         "create-tag " + string(dataString),
 			})
 		}
 	}
+
 	return items, nil
 }
 
@@ -701,6 +958,7 @@ func (c SyncFilter) MenuItem() alfred.Item {
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword(),
 		SubtitleAll:  "Sync with toggl.com",
+		Valid:        alfred.Invalid,
 	}
 }
 
@@ -709,7 +967,10 @@ func (c SyncFilter) Items(prefix, query string) ([]alfred.Item, error) {
 	if err != nil {
 		return []alfred.Item{}, err
 	}
-	return []alfred.Item{alfred.Item{Title: "Synchronized!"}}, nil
+	return []alfred.Item{alfred.Item{
+		Title: "Synchronized!",
+		Valid: alfred.Invalid,
+	}}, nil
 }
 
 // toggle ------------------------------------------------
@@ -744,11 +1005,11 @@ func (c ToggleAction) Do(query string) (string, error) {
 			if entry.IsRunning() {
 				// two p's so we get "Stopped"
 				operation = "Stopp"
-				updatedEntry, err = session.StopTimer(*entry)
+				updatedEntry, err = session.StopTimeEntry(*entry)
 				adata.TimeEntries[i] = updatedEntry
 			} else {
 				operation = "Start"
-				updatedEntry, err = session.ContinueTimer(*entry)
+				updatedEntry, err = session.ContinueTimeEntry(*entry)
 				adata.TimeEntries = append(adata.TimeEntries, updatedEntry)
 			}
 
@@ -801,9 +1062,9 @@ func (c StartAction) Do(query string) (string, error) {
 
 	var entry toggl.TimeEntry
 	if data.Pid != 0 {
-		entry, err = session.StartTimerForProject(data.Description, data.Pid)
+		entry, err = session.StartTimeEntryForProject(data.Description, data.Pid)
 	} else {
-		entry, err = session.StartTimer(data.Description)
+		entry, err = session.StartTimeEntry(data.Description)
 	}
 
 	if err == nil {
@@ -815,23 +1076,23 @@ func (c StartAction) Do(query string) (string, error) {
 		}
 	}
 
-	return "Started timer", err
+	return "Created time entry", err
 }
 
-// update-timer ------------------------------------------
+// update-entry ------------------------------------------
 
-type UpdateTimerAction struct{}
+type UpdateTimeEntryAction struct{}
 
-func (c UpdateTimerAction) Keyword() string {
-	return "update-timer"
+func (c UpdateTimeEntryAction) Keyword() string {
+	return "update-entry"
 }
 
-func (c UpdateTimerAction) IsEnabled() bool {
+func (c UpdateTimeEntryAction) IsEnabled() bool {
 	return config.ApiKey != ""
 }
 
-func (c UpdateTimerAction) Do(query string) (string, error) {
-	log.Printf("update-timer %s", query)
+func (c UpdateTimeEntryAction) Do(query string) (string, error) {
+	log.Printf("update-entry %s", query)
 
 	var entry toggl.TimeEntry
 	err := json.Unmarshal([]byte(query), &entry)
@@ -841,7 +1102,7 @@ func (c UpdateTimerAction) Do(query string) (string, error) {
 
 	session := toggl.OpenSession(config.ApiKey)
 
-	entry, err = session.UpdateTimer(entry)
+	entry, err = session.UpdateTimeEntry(entry)
 	if err != nil {
 		return "", err
 	}
@@ -862,7 +1123,92 @@ func (c UpdateTimerAction) Do(query string) (string, error) {
 	return fmt.Sprintf("Updated '%s'", entry.Description), nil
 }
 
+// update-project ----------------------------------------
+
+type UpdateProjectAction struct{}
+
+func (c UpdateProjectAction) Keyword() string {
+	return "update-project"
+}
+
+func (c UpdateProjectAction) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
+func (c UpdateProjectAction) Do(query string) (string, error) {
+	log.Printf("update-project %s", query)
+
+	var project toggl.Project
+	err := json.Unmarshal([]byte(query), &project)
+	if err != nil {
+		return "", fmt.Errorf("Invalid time entry %v", query)
+	}
+
+	session := toggl.OpenSession(config.ApiKey)
+
+	project, err = session.UpdateProject(project)
+	if err != nil {
+		return "", err
+	}
+
+	adata := &cache.Account.Data
+
+	for i, p := range adata.Projects {
+		if p.Id == project.Id {
+			adata.Projects[i] = project
+			err = alfred.SaveJson(cacheFile, &cache)
+			if err != nil {
+				log.Printf("Error saving cache: %v\n", err)
+			}
+			break
+		}
+	}
+
+	return fmt.Sprintf("Updated '%s'", project.Name), nil
+}
+
+// update-tag --------------------------------------------
+
+type UpdateTagAction struct{}
+
+func (c UpdateTagAction) Keyword() string {
+	return "update-tag"
+}
+
+func (c UpdateTagAction) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
+func (c UpdateTagAction) Do(query string) (string, error) {
+	log.Printf("update-tag %s", query)
+
+	var tag toggl.Tag
+	err := json.Unmarshal([]byte(query), &tag)
+	if err != nil {
+		return "", fmt.Errorf("Invalid time entry %v", query)
+	}
+
+	session := toggl.OpenSession(config.ApiKey)
+
+	tag, err = session.UpdateTag(tag)
+	if err != nil {
+		return "", err
+	}
+
+	// Since tags are referenced by name, updating one can cause changes in
+	// multiple time entries. The simplest way to handle that is just to
+	// refresh everything.
+	refresh()
+
+	return fmt.Sprintf("Updated '%s'", tag.Name), nil
+}
+
 // delete ------------------------------------------------
+
+type deleteMessage struct {
+	Type string
+	Id   int
+}
 
 type DeleteAction struct{}
 
@@ -875,22 +1221,34 @@ func (c DeleteAction) IsEnabled() bool {
 }
 
 func (c DeleteAction) Do(query string) (string, error) {
-	session := toggl.OpenSession(config.ApiKey)
-
 	log.Printf("delete %s", query)
-	id, err := strconv.Atoi(query)
 
-	if err == nil {
-		accountData := &cache.Account.Data
-		for i := 0; i < len(accountData.TimeEntries); i++ {
-			entry := &accountData.TimeEntries[i]
-			if entry.Id == id {
-				prompt := fmt.Sprintf("Are you sure you want to delete '%s'?", entry.Description)
+	var message deleteMessage
+	err := json.Unmarshal([]byte(query), &message)
+	if err != nil {
+		return "", err
+	}
+
+	session := toggl.OpenSession(config.ApiKey)
+	accountData := &cache.Account.Data
+	var result struct {
+		found   bool
+		name    string
+		deleted bool
+	}
+
+	switch message.Type {
+	case "time entry":
+		for i, entry := range accountData.TimeEntries {
+			if entry.Id == message.Id {
+				result.found = true
+				result.name = entry.Description
+				prompt := fmt.Sprintf("Are you sure you want to delete timer '%s'?", entry.Description)
 				yes, _ := workflow.GetConfirmation(prompt, false)
 
 				if yes {
-					log.Printf("Deleting\n")
-					_, err := session.DeleteTimer(*entry)
+					log.Printf("Deleting '" + entry.Description + "'")
+					_, err := session.DeleteTimeEntry(entry)
 					if err != nil {
 						return "", err
 					}
@@ -901,20 +1259,222 @@ func (c DeleteAction) Do(query string) (string, error) {
 						accountData.TimeEntries = accountData.TimeEntries[:i]
 					}
 
-					err = alfred.SaveJson(cacheFile, &cache)
-					if err != nil {
-						log.Printf("Error saving cache: %v\n", err)
-					}
-				} else {
-					log.Printf("Not deleting\n")
+					result.deleted = true
 				}
+			}
+		}
+	case "project":
+		for i, project := range accountData.Projects {
+			if project.Id == message.Id {
+				result.found = true
+				result.name = project.Name
+				prompt := fmt.Sprintf("Are you sure you want to delete project '%s'?", project.Name)
+				yes, _ := workflow.GetConfirmation(prompt, false)
 
-				return "Deleted " + entry.Description, nil
+				if yes {
+					log.Printf("Deleting\n")
+					_, err := session.DeleteProject(project)
+					if err != nil {
+						return "", err
+					}
+
+					if i < len(accountData.Projects)-1 {
+						accountData.Projects = append(accountData.Projects[:i], accountData.Projects[i+1:]...)
+					} else {
+						accountData.Projects = accountData.Projects[:i]
+					}
+
+					result.deleted = true
+				}
+			}
+		}
+	case "tag":
+		for i, tag := range accountData.Tags {
+			if tag.Id == message.Id {
+				result.found = true
+				result.name = tag.Name
+				prompt := fmt.Sprintf("Are you sure you want to delete tag '%s'?", tag.Name)
+				yes, _ := workflow.GetConfirmation(prompt, false)
+
+				if yes {
+					log.Printf("Deleting\n")
+					_, err := session.DeleteTag(tag)
+					if err != nil {
+						return "", err
+					}
+
+					if i < len(accountData.Tags)-1 {
+						accountData.Tags = append(accountData.Tags[:i], accountData.Tags[i+1:]...)
+					} else {
+						accountData.Tags = accountData.Tags[:i]
+					}
+
+					result.deleted = true
+				}
 			}
 		}
 	}
 
-	return "", fmt.Errorf("Invalid time entry ID %d", id)
+	if result.found {
+		if result.deleted {
+			refresh()
+		}
+
+		return "Deleted " + result.name, nil
+	}
+
+	return "", fmt.Errorf("Invalid %s ID %d", message.Type, message.Id)
+}
+
+// create-project ----------------------------------------
+
+type createProjectMessage struct {
+	Name string
+	Wid  int
+}
+
+type CreateProjectAction struct{}
+
+func (c CreateProjectAction) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
+func (c CreateProjectAction) Keyword() string {
+	return "create-project"
+}
+
+func (c CreateProjectAction) Do(query string) (string, error) {
+	log.Printf("create-project '%s'", query)
+
+	var data createProjectMessage
+	err := json.Unmarshal([]byte(query), &data)
+	if err != nil {
+		return "", err
+	}
+
+	session := toggl.OpenSession(config.ApiKey)
+	if err != nil {
+		return "", err
+	}
+
+	var project toggl.Project
+	if data.Wid == 0 {
+		data.Wid = cache.Account.Data.Workspaces[0].Id
+	}
+	project, err = session.CreateProject(data.Name, data.Wid)
+
+	if err == nil {
+		log.Printf("Got project: %#v\n", project)
+		cache.Account.Data.Projects = append(cache.Account.Data.Projects, project)
+		err := alfred.SaveJson(cacheFile, &cache)
+		if err != nil {
+			log.Printf("Error saving cache: %s\n", err)
+		}
+	}
+
+	return fmt.Sprintf("Created project '%s'", data.Name), err
+}
+
+// create-tag --------------------------------------------
+
+type createTagMessage struct {
+	Name string
+	Wid  int
+}
+
+type CreateTagAction struct{}
+
+func (c CreateTagAction) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
+func (c CreateTagAction) Keyword() string {
+	return "create-tag"
+}
+
+func (c CreateTagAction) Do(query string) (string, error) {
+	log.Printf("create-tag '%s'", query)
+
+	var data createTagMessage
+	err := json.Unmarshal([]byte(query), &data)
+	if err != nil {
+		return "", err
+	}
+
+	session := toggl.OpenSession(config.ApiKey)
+	if err != nil {
+		return "", err
+	}
+
+	var tag toggl.Tag
+	if data.Wid == 0 {
+		data.Wid = cache.Account.Data.Workspaces[0].Id
+	}
+	tag, err = session.CreateTag(data.Name, data.Wid)
+
+	if err == nil {
+		log.Printf("Got tag: %#v\n", tag)
+		cache.Account.Data.Tags = append(cache.Account.Data.Tags, tag)
+		err := alfred.SaveJson(cacheFile, &cache)
+		if err != nil {
+			log.Printf("Error saving cache: %s\n", err)
+		}
+	}
+
+	return fmt.Sprintf("Created tag '%s'", data.Name), err
+}
+
+// tag ---------------------------------------------------
+
+type tagMessage struct {
+	Tag       string
+	TimeEntry int
+	Add       bool
+}
+
+type TagAction struct{}
+
+func (c TagAction) IsEnabled() bool {
+	return config.ApiKey != ""
+}
+
+func (c TagAction) Keyword() string {
+	return "tag"
+}
+
+func (c TagAction) Do(query string) (string, error) {
+	log.Printf("tag '%s'", query)
+
+	var data tagMessage
+	err := json.Unmarshal([]byte(query), &data)
+	if err != nil {
+		return "", err
+	}
+
+	session := toggl.OpenSession(config.ApiKey)
+	if err != nil {
+		return "", err
+	}
+
+	entry, err := session.AddRemoveTag(data.TimeEntry, data.Tag, data.Add)
+	if err != nil {
+		return "", err
+	}
+
+	adata := &cache.Account.Data
+
+	for i, e := range adata.TimeEntries {
+		if e.Id == entry.Id {
+			adata.TimeEntries[i] = entry
+			err = alfred.SaveJson(cacheFile, &cache)
+			if err != nil {
+				log.Printf("Error saving cache: %v\n", err)
+			}
+			break
+		}
+	}
+
+	return fmt.Sprintf("Updated tag '%s' for %d", data.Tag, data.TimeEntry), err
 }
 
 // support functions /////////////////////////////////////////////////////////
@@ -938,6 +1498,8 @@ func refresh() error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("got account: %#v", account)
 
 	cache.Time = time.Now()
 	cache.Account = account
@@ -989,12 +1551,21 @@ func findTimerById(id int) (toggl.TimeEntry, bool) {
 	return toggl.TimeEntry{}, false
 }
 
-func getTimersForQuery(query string) []toggl.TimeEntry {
-	timers := cache.Account.Data.TimeEntries[:]
+func findTagByName(name string) (toggl.Tag, bool) {
+	for _, tag := range cache.Account.Data.Tags {
+		if tag.Name == name {
+			return tag, true
+		}
+	}
+	return toggl.Tag{}, false
+}
+
+func getTimeEntriesForQuery(query string) []toggl.TimeEntry {
+	entries := cache.Account.Data.TimeEntries[:]
 	matchQuery := strings.ToLower(query)
 	matched := []toggl.TimeEntry{}
 
-	for _, entry := range timers {
+	for _, entry := range entries {
 		if strings.Contains(strings.ToLower(entry.Description), matchQuery) {
 			matched = append(matched, entry)
 		}
@@ -1004,14 +1575,14 @@ func getTimersForQuery(query string) []toggl.TimeEntry {
 	return matched
 }
 
-func getLatestTimerForProject(pid int) []toggl.TimeEntry {
-	timers := cache.Account.Data.TimeEntries[:]
+func getLatestTimeEntriesForProject(pid int) []toggl.TimeEntry {
+	entries := cache.Account.Data.TimeEntries[:]
 	matched := map[string]toggl.TimeEntry{}
 
-	for _, entry := range timers {
+	for _, entry := range entries {
 		if entry.Pid == pid {
 			e, ok := matched[entry.Description]
-			if !ok || (!entry.Start.IsZero() && !e.Start.IsZero() && entry.Start.After(e.Start)) {
+			if !ok || (!entry.StartTime().IsZero() && !e.StartTime().IsZero() && entry.StartTime().After(e.StartTime())) {
 				matched[entry.Description] = entry
 			}
 		}
@@ -1024,6 +1595,23 @@ func getLatestTimerForProject(pid int) []toggl.TimeEntry {
 
 	sort.Sort(sort.Reverse(byTime(matchedArr)))
 	return matchedArr
+}
+
+func getLatestTimeEntriesForTag(tag string) []toggl.TimeEntry {
+	entries := cache.Account.Data.TimeEntries[:]
+	matched := []toggl.TimeEntry{}
+
+	for _, entry := range entries {
+		for _, t := range entry.Tags {
+			if t == tag {
+				matched = append(matched, entry)
+				break
+			}
+		}
+	}
+
+	sort.Sort(sort.Reverse(byTime(matched)))
+	return matched
 }
 
 func createReportItems(prefix string, parts []string, since, until time.Time) ([]alfred.Item, error) {
@@ -1129,8 +1717,8 @@ func generateReport(since, until time.Time) (*summaryReport, error) {
 
 	for _, entry := range cache.Account.Data.TimeEntries {
 		var start time.Time
-		if !entry.Start.IsZero() {
-			start = entry.Start
+		if entry.Start != nil {
+			start = *entry.Start
 		}
 
 		if !start.Before(since) && !until.Before(start) {
@@ -1155,7 +1743,7 @@ func generateReport(since, until time.Time) (*summaryReport, error) {
 			duration := entry.Duration
 
 			if duration < 0 {
-				duration = int(time.Now().Sub(entry.Start).Seconds())
+				duration = int(time.Now().Sub(entry.StartTime()).Seconds())
 				project.running = true
 			}
 
@@ -1277,7 +1865,7 @@ func (b byTime) Less(i, j int) bool {
 	} else if b[j].Start.IsZero() {
 		return false
 	} else {
-		return b[i].Start.Before(b[j].Start)
+		return b[i].StartTime().Before(b[j].StartTime())
 	}
 }
 
