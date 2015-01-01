@@ -23,7 +23,8 @@ var cache Cache
 var workflow *alfred.Workflow
 
 type Config struct {
-	ApiKey string `json:"api_key"`
+	ApiKey   string `json:"api_key"`
+	TestMode bool
 }
 
 type Cache struct {
@@ -1480,6 +1481,11 @@ func (c TagAction) Do(query string) (string, error) {
 // support functions /////////////////////////////////////////////////////////
 
 func checkRefresh() error {
+	if config.TestMode {
+		log.Printf("Test mode is active; not auto-refreshing")
+		return nil
+	}
+
 	if time.Now().Sub(cache.Time).Minutes() < 5.0 {
 		return nil
 	}
