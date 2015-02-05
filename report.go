@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 	"time"
 
 	"github.com/jason0x43/go-alfred"
@@ -37,7 +38,7 @@ func (c ReportFilter) Items(prefix, query string) ([]alfred.Item, error) {
 	var since time.Time
 	var until time.Time
 	var span string
-	parts := alfred.SplitAndTrimQuery(query)
+	parts := alfred.TrimAllLeft(strings.Split(query, alfred.Separator))
 
 	if parts[0] == "today" {
 		since = toDayStart(time.Now())

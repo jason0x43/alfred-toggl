@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/jason0x43/go-alfred"
 	"github.com/jason0x43/go-toggl"
@@ -36,7 +37,7 @@ func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
 		return items, err
 	}
 
-	parts := alfred.SplitAndTrimQuery(query)
+	parts := alfred.TrimAllLeft(strings.Split(query, alfred.Separator))
 	log.Printf("parts: %d", len(parts))
 
 	if len(parts) > 1 {

@@ -39,7 +39,7 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 	}
 
 	projects := getProjectsById()
-	parts := alfred.SplitAndTrimQuery(query)
+	parts := alfred.TrimAllLeft(strings.Split(query, alfred.Separator))
 	id, err := strconv.Atoi(parts[0])
 	if err != nil {
 		id = 0

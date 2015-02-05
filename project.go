@@ -38,7 +38,7 @@ func (c ProjectFilter) Items(prefix, query string) ([]alfred.Item, error) {
 		return items, err
 	}
 
-	parts := alfred.SplitAndTrimQuery(query)
+	parts := alfred.TrimAllLeft(strings.Split(query, alfred.Separator))
 	log.Printf("parts: %s", parts)
 
 	projectName := parts[0]

@@ -15,7 +15,7 @@ var cacheFile string
 var configFile string
 var config Config
 var cache Cache
-var workflow *alfred.Workflow
+var workflow alfred.Workflow
 
 type Config struct {
 	ApiKey   string `json:"api_key"`
