@@ -72,7 +72,6 @@ func main() {
 		CreateTagAction{},
 		ToggleAction{},
 		DeleteAction{},
-		TagAction{},
 	}
 
 	workflow.Run(commands)

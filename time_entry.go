@@ -79,7 +79,7 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 			subcommand := "description"
 
 			if len(parts) > 2 && parts[2] != "" {
-				updateEntry := entry
+				updateEntry := entry.Copy()
 				updateEntry.Description = parts[2]
 				dataString, _ := json.Marshal(updateEntry)
 
@@ -115,10 +115,19 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 
 				for _, proj := range projects {
 					if matches(proj.Name, name) {
-						items = append(items, alfred.Item{
+						updateEntry := entry.Copy()
+						if entry.Pid == proj.Id {
+							updateEntry.Pid = 0
+						} else {
+							updateEntry.Pid = proj.Id
+						}
+						dataString, _ := json.Marshal(updateEntry)
+
+						items = append(items, alfred.MakeChoice(alfred.Item{
 							Title:        proj.Name,
 							Autocomplete: complete + proj.Name + alfred.Terminator,
-						})
+							Arg:          "update-entry " + string(dataString),
+						}, entry.Pid == proj.Id))
 					}
 				}
 			} else {
@@ -139,21 +148,21 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 				// We have the "tags" subcommand followed by a query
 				for _, tag := range cache.Account.Data.Tags {
 					if alfred.FuzzyMatches(tag.Name, parts[2]) {
-						title := tag.Name
-						icon := ""
-						data := tagMessage{Tag: tag.Name, TimeEntry: entry.Id, Add: true}
+						item := alfred.MakeChoice(alfred.Item{
+							Title:        tag.Name,
+							Autocomplete: prefix + tag.Name,
+						}, entry.HasTag(tag.Name))
 
+						updateEntry := entry.Copy()
 						if entry.HasTag(tag.Name) {
-							data.Add = false
-							icon = "running.png"
+							updateEntry.RemoveTag(tag.Name)
+						} else {
+							updateEntry.AddTag(tag.Name)
 						}
+						dataString, _ := json.Marshal(updateEntry)
 
-						dataString, _ := json.Marshal(data)
-						items = append(items, alfred.Item{
-							Title: title,
-							Arg:   "tag " + string(dataString),
-							Icon:  icon,
-						})
+						item.Arg = "update-entry " + string(dataString)
+						items = append(items, item)
 					}
 				}
 			} else {

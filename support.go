@@ -247,7 +247,7 @@ func createReportItems(prefix string, parts []string, since, until time.Time) ([
 			}
 
 			if name == "" {
-				totalName = prefix
+				totalName = strings.TrimRight(prefix, " ")
 			}
 		}
 
