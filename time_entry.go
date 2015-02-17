@@ -181,8 +181,8 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 			subcommand := "start"
 
 			var startTime string
-			if !entry.Start.IsZero() {
-				startTime = entry.Start.Local().Format("15:04")
+			if !entry.StartTime().IsZero() {
+				startTime = entry.StartTime().Local().Format("15:04")
 			}
 
 			item := alfred.Item{
@@ -198,7 +198,7 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 			if len(parts) > 2 && parts[2] != "" {
 				newTime, err := time.Parse("15:04", parts[2])
 				if err == nil {
-					originalStart := entry.Start.Local()
+					originalStart := entry.StartTime().Local()
 					originalMinutes := originalStart.Hour()*60 + originalStart.Minute()
 					newMinutes := newTime.Hour()*60 + newTime.Minute()
 
@@ -232,7 +232,7 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 		if !entry.IsRunning() {
 			if alfred.FuzzyMatches("stop", property) {
 				subcommand := "stop"
-				stopTime := entry.Stop
+				stopTime := entry.StopTime()
 				addItem(subcommand+": "+stopTime.Local().Format("15:04"), "", subcommand, false, false)
 			}
 
@@ -317,8 +317,8 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 				subtitle += startTime.Local().Format("3:04pm") + " to "
 				if entry.Duration < 0 {
 					subtitle += "now"
-				} else if !entry.Stop.IsZero() {
-					subtitle += entry.Stop.Local().Format("3:04pm")
+				} else if !entry.StopTime().IsZero() {
+					subtitle += entry.StopTime().Local().Format("3:04pm")
 				} else {
 					log.Printf("No duration or stop time")
 				}

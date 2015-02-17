@@ -274,10 +274,7 @@ func generateReport(since, until time.Time) (*summaryReport, error) {
 	projects := getProjectsById()
 
 	for _, entry := range cache.Account.Data.TimeEntries {
-		var start time.Time
-		if entry.Start != nil {
-			start = *entry.Start
-		}
+		start := entry.StartTime()
 
 		if !start.Before(since) && !until.Before(start) {
 			var projectName string
@@ -418,9 +415,9 @@ func (b byTime) Swap(i, j int) {
 }
 
 func (b byTime) Less(i, j int) bool {
-	if b[i].Start.IsZero() {
+	if b[i].StartTime().IsZero() {
 		return true
-	} else if b[j].Start.IsZero() {
+	} else if b[j].StartTime().IsZero() {
 		return false
 	} else {
 		return b[i].StartTime().Before(b[j].StartTime())
