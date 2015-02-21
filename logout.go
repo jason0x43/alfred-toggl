@@ -25,13 +25,13 @@ func (c LogoutCommand) Items(prefix, query string) ([]alfred.Item, error) {
 	return []alfred.Item{c.MenuItem()}, nil
 }
 
-func (c LogoutCommand) Do(query string) (string, error) {
+func (c LogoutCommand) Do(query string) (out string, err error) {
 	config.ApiKey = ""
-	err := alfred.SaveJson(configFile, &config)
+	err = alfred.SaveJson(configFile, &config)
 	if err != nil {
-		return "", err
+		return
 	}
 
 	workflow.ShowMessage("You are now logged out of Toggl")
-	return "", nil
+	return
 }

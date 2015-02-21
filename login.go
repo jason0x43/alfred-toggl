@@ -30,36 +30,39 @@ func (c LoginCommand) Items(prefix, query string) ([]alfred.Item, error) {
 	return []alfred.Item{c.MenuItem()}, nil
 }
 
-func (c LoginCommand) Do(query string) (string, error) {
-	btn, username, err := workflow.GetInput("Email address", "", false)
+func (c LoginCommand) Do(query string) (out string, err error) {
+	var btn, username string
+	btn, username, err = workflow.GetInput("Email address", "", false)
 	if err != nil {
-		return "", err
+		return
 	}
 
 	if btn != "Ok" {
 		log.Println("User didn't click OK")
-		return "", nil
+		return
 	}
 	log.Printf("username: %s", username)
 
-	btn, password, err := workflow.GetInput("Password", "", true)
+	var password string
+	btn, password, err = workflow.GetInput("Password", "", true)
 	if btn != "Ok" {
 		log.Println("User didn't click OK")
-		return "", nil
+		return
 	}
 	log.Printf("password: *****")
 
-	session, err := toggl.NewSession(username, password)
+	var session toggl.Session
+	session, err = toggl.NewSession(username, password)
 	if err != nil {
-		return "", err
+		return
 	}
 
 	config.ApiKey = session.ApiToken
 	err = alfred.SaveJson(configFile, &config)
 	if err != nil {
-		return "", err
+		return
 	}
 
 	workflow.ShowMessage("Login successful!")
-	return "", nil
+	return
 }
