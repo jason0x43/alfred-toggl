@@ -17,13 +17,12 @@ func (c LogoutCommand) MenuItem() alfred.Item {
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword(),
 		SubtitleAll:  "Logout of Toggl, but keep any local config",
+		Arg:          "logout",
 	}
 }
 
 func (c LogoutCommand) Items(prefix, query string) ([]alfred.Item, error) {
-	item := c.MenuItem()
-	item.Arg = "logout"
-	return []alfred.Item{item}, nil
+	return []alfred.Item{c.MenuItem()}, nil
 }
 
 func (c LogoutCommand) Do(query string) (string, error) {
