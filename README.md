@@ -29,7 +29,7 @@ The `timers` command lists all user time entries created during the last 9 days,
 
 ![Timers list](doc/timers.png?raw=true)
 
-Actioning a time entry will start a new time entry with the same project and description and the actioned entry.
+Actioning a time entry will continue that entry, either by starting a new time entry with the same project and description, or by increasing the duration of the time entry. The specific behavior is user configurable.
 
 Tabbing a time entry will show a list of entry properties (description, project, tags) and subcommands (delete). Tabbing a selected property will show that property’s value. Some properties, such as “description”, can be modified. For these, entering a new value and pressing Enter will update the time entry.
 
@@ -47,6 +47,8 @@ The `projects` command lists all user projects. Projects are listed in reverse c
 
 Tabbing a project will present a list of properties (name) and subcommands (delete). Tabbing a property will show the property’s value, and may allow it to be changed. Actioning a subcommand will execute the subcommand.
 
+A new project may be added by entering a unique project name when the `projects` list is displayed.
+
 ![Project menu](doc/project_menu.png?raw=true)
 
 ### `tags`
@@ -56,6 +58,8 @@ The `tags` command lists all user tags in alphabetical order.
 ![Tags list](doc/tags.png?raw=true)
 
 Tabbing a tag will present a list of properties (name) and subcommands (delete). Tabbing a property will show the property’s value, and may allow it to be changed. Actioning a subcommand will execute the subcommand.
+
+A new tag may be added by entering a unique project name when the `tags` list is displayed.
 
 ![Tag menu](doc/tag_menu.png?raw=true)
 
@@ -72,6 +76,12 @@ Tabbing one of the report types will show the total hours for the given time fra
 Tabbing one of the projects will show how time was spent on that project, broken up by task. Multiple time entries with the same description will be grouped into a single task.
 
 ![This week's report for a project](doc/report_this_week_project.png?raw=true)
+
+### `options`
+
+The `options` command lists user-configurable options and allows the user to modify them.
+
+![Options menu](doc/options_menu.png?raw=true)
 
 ### `sync`
 
