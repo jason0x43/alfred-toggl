@@ -380,9 +380,16 @@ func toHumanDateString(date time.Time) string {
 // convert a number of seconds to a fractional hour, as an int
 // 1.25 hours = 125
 // 0.25 hours = 25
-func roundDuration(duration int) int {
-	quarterHours := int(math.Ceil(float64(duration) / 900.0))
-	return quarterHours * 25
+func roundDuration(duration int64) int64 {
+	if config.Rounding != 0 {
+		incr := float64(config.Rounding * 60)
+		frac := 60.0 / float64(config.Rounding)
+		fracHours := int64(math.Ceil(float64(duration) / incr))
+		return fracHours * int64((100.0 / frac))
+	} else {
+		hours := float64(duration) / 3600.0
+		return int64(hours * 100)
+	}
 }
 
 type timeEntry struct {
