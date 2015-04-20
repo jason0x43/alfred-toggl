@@ -30,6 +30,7 @@ func (c ToggleAction) Do(query string) (string, error) {
 
 	adata := &cache.Account.Data
 	session := toggl.OpenSession(config.ApiKey)
+	running, isRunning := getRunningTimer()
 
 	for i := 0; i < len(adata.TimeEntries); i++ {
 		entry := &adata.TimeEntries[i]
@@ -58,7 +59,13 @@ func (c ToggleAction) Do(query string) (string, error) {
 				return "", err
 			}
 
-			err = alfred.SaveJson(cacheFile, &cache)
+			if isRunning && running.Id != updatedEntry.Id {
+				// If a different timer was previously running, refresh everything
+				err = refresh()
+			} else {
+				err = alfred.SaveJson(cacheFile, &cache)
+			}
+
 			if err != nil {
 				log.Printf("Error saving cache: %v\n", err)
 			}
