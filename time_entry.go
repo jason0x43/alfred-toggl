@@ -255,7 +255,7 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 					if err == nil {
 						updateTimer := toggl.TimeEntry{
 							Id:       entry.Id,
-							Duration: int(val * 60 * 60),
+							Duration: int64(val * 60 * 60),
 						}
 
 						dataString, _ := json.Marshal(updateTimer)
@@ -303,11 +303,11 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 			})
 		} else {
 			for _, entry := range entries {
-				var seconds int
+				var seconds int64
 
 				startTime := entry.StartTime()
 				if entry.Duration < 0 {
-					seconds = int(time.Now().Sub(startTime).Seconds())
+					seconds = int64(time.Now().Sub(startTime).Seconds())
 				} else {
 					seconds = entry.Duration
 				}

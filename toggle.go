@@ -9,8 +9,10 @@ import (
 	"github.com/jason0x43/go-toggl"
 )
 
+// ToggleAction toggles a time entry's running state.
 type ToggleAction struct{}
 
+// Keyword return's the action's keyword.
 func (c ToggleAction) Keyword() string {
 	return "toggle"
 }

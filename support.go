@@ -186,7 +186,7 @@ func createReportItems(prefix string, parts []string, since, until time.Time) ([
 	log.Printf("parts: %#v\n", parts)
 
 	if len(report.projects) > 0 {
-		var total int
+		var total int64
 		var totalName string
 		var name string
 
@@ -298,7 +298,7 @@ func generateReport(since, until time.Time) (*summaryReport, error) {
 			duration := entry.Duration
 
 			if duration < 0 {
-				duration = int(time.Now().Sub(entry.StartTime()).Seconds())
+				duration = int64(time.Now().Sub(entry.StartTime()).Seconds())
 				project.running = true
 			}
 
@@ -377,7 +377,7 @@ func toHumanDateString(date time.Time) string {
 	}
 }
 
-// convert a number of milliseconds to a fractional hour, as an int
+// convert a number of seconds to a fractional hour, as an int
 // 1.25 hours = 125
 // 0.25 hours = 25
 func roundDuration(duration int) int {
@@ -386,13 +386,13 @@ func roundDuration(duration int) int {
 }
 
 type timeEntry struct {
-	total       int
+	total       int64
 	running     bool
 	description string
 }
 
 type projectEntry struct {
-	total   int
+	total   int64
 	name    string
 	id      int
 	running bool
@@ -400,7 +400,7 @@ type projectEntry struct {
 }
 
 type summaryReport struct {
-	total    int
+	total    int64
 	projects map[string]*projectEntry
 }
 
