@@ -20,7 +20,7 @@ var workflow alfred.Workflow
 type Config struct {
 	ApiKey       string `json:"api_key"`
 	DurationOnly bool   `desc:"Extend time entries instead of creating new ones."`
-	Rounding     int    `desc:"Minutes to round to, 0 to disable." help:"%v minute increments"`
+	Rounding     int    `desc:"Minutes to round to, 0 to disable rounding." help:"%v minute increments"`
 	TestMode     bool
 }
 

@@ -47,8 +47,9 @@ func (c OptionsCommand) Items(prefix, query string) (items []alfred.Item, err er
 		}
 
 		item := alfred.Item{
-			Title:    field.Name + ": ",
-			Subtitle: desc,
+			Title:        field.Name + ": ",
+			Subtitle:     desc,
+			Autocomplete: prefix + field.Name + " ",
 		}
 
 		if field.Type.Name() == "bool" {
@@ -89,12 +90,12 @@ func (c OptionsCommand) Items(prefix, query string) (items []alfred.Item, err er
 				}
 
 				item.Valid = alfred.Invalid
-				item.Autocomplete = prefix + field.Name + " "
 			}
 		}
 
 		items = append(items, item)
 	}
+	items = alfred.SortItemsForKeyword(items, query)
 	return
 }
 
