@@ -62,6 +62,7 @@ func main() {
 		TagFilter{},
 		ReportFilter{},
 		SyncFilter{},
+		OptionsCommand{},
 		LogoutCommand{},
 		ResetCommand{},
 		StartAction{},
