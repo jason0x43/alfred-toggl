@@ -289,6 +289,8 @@ func (c TimeEntryFilter) Items(prefix, query string) (items []alfred.Item, err e
 
 			items = append(items, item)
 		}
+
+		items = alfred.SortItemsForKeyword(items, property)
 	} else {
 		entries := getTimeEntriesForQuery(parts[0])
 
