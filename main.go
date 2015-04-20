@@ -20,6 +20,9 @@ var workflow alfred.Workflow
 type Config struct {
 	ApiKey   string `json:"api_key"`
 	TestMode bool
+	ApiKey       string `json:"api_key"`
+	DurationOnly bool   `desc:"Extend time entries instead of creating new ones."`
+	TestMode     bool
 }
 
 type Cache struct {

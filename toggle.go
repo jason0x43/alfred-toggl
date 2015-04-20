@@ -45,8 +45,13 @@ func (c ToggleAction) Do(query string) (string, error) {
 				adata.TimeEntries[i] = updatedEntry
 			} else {
 				operation = "Start"
-				updatedEntry, err = session.ContinueTimeEntry(*entry)
-				adata.TimeEntries = append(adata.TimeEntries, updatedEntry)
+				updatedEntry, err = session.ContinueTimeEntry(*entry, config.DurationOnly)
+				log.Printf("Updated entry: %v", updatedEntry)
+				if updatedEntry.Id == entry.Id {
+					adata.TimeEntries[i] = updatedEntry
+				} else {
+					adata.TimeEntries = append(adata.TimeEntries, updatedEntry)
+				}
 			}
 
 			if err != nil {
