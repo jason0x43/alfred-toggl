@@ -381,7 +381,7 @@ func (c UpdateTimeEntryAction) Do(query string) (string, error) {
 	for i, e := range adata.TimeEntries {
 		if e.Id == entry.Id {
 			adata.TimeEntries[i] = entry
-			err = alfred.SaveJson(cacheFile, &cache)
+			err = alfred.SaveJSON(cacheFile, &cache)
 			if err != nil {
 				log.Printf("Error saving cache: %v\n", err)
 			}

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 
 	"github.com/jason0x43/go-alfred"
@@ -13,8 +12,10 @@ import (
 
 // project -----------------------------------------------
 
+// ProjectFilter is a command for handling projects
 type ProjectFilter struct{}
 
+// Keyword returns the keyword for the projects command
 func (c ProjectFilter) Keyword() string {
 	return "projects"
 }
@@ -151,23 +152,26 @@ func (c ProjectFilter) Items(prefix, query string) ([]alfred.Item, error) {
 		}
 	} else {
 		// list projects
-		var matchEntries []matchEntry
-		matchQuery := strings.ToLower(query)
 		runningTimer, isRunning := getRunningTimer()
 
 		for _, entry := range cache.Account.Data.Projects {
-			idx := strings.Index(strings.ToLower(entry.Name), matchQuery)
-			if idx != -1 {
-				matchEntries = append(matchEntries, matchEntry{
-					title:   entry.Name,
-					start:   idx,
-					id:      entry.Id,
-					portion: float32(len(query)) / float32(len(entry.Name)),
-				})
+			if alfred.FuzzyMatches(entry.Name, query) {
+				item := alfred.Item{
+					Title:        entry.Name,
+					SubtitleAll:  "",
+					Valid:        alfred.Invalid,
+					Autocomplete: prefix + entry.Name + alfred.Separator + " ",
+				}
+
+				if isRunning && runningTimer.Pid == entry.Id {
+					item.Icon = "running.png"
+				}
+
+				items = append(items, item)
 			}
 		}
 
-		if len(matchEntries) == 0 && query != "" {
+		if len(items) == 0 && query != "" {
 			data := createProjectMessage{Name: parts[0]}
 			dataString, _ := json.Marshal(data)
 
@@ -176,24 +180,8 @@ func (c ProjectFilter) Items(prefix, query string) ([]alfred.Item, error) {
 				SubtitleAll: "New project",
 				Arg:         "create-project " + string(dataString),
 			})
-		} else {
-			sort.Sort(sort.Reverse(byMatchId(matchEntries)))
-			sort.Stable(sort.Reverse(byBestMatch(matchEntries)))
-
-			for _, entry := range matchEntries {
-				item := alfred.Item{
-					Title:        entry.title,
-					SubtitleAll:  entry.subtitle,
-					Valid:        alfred.Invalid,
-					Autocomplete: prefix + entry.title + alfred.Separator + " ",
-				}
-
-				if isRunning && runningTimer.Pid == entry.id {
-					item.Icon = "running.png"
-				}
-
-				items = append(items, item)
-			}
+		} else if query != "" {
+			alfred.SortItemsForKeyword(items, query)
 		}
 
 		if len(items) == 0 {
@@ -237,7 +225,7 @@ func (c UpdateProjectAction) Do(query string) (string, error) {
 	for i, p := range adata.Projects {
 		if p.Id == project.Id {
 			adata.Projects[i] = project
-			err = alfred.SaveJson(cacheFile, &cache)
+			err = alfred.SaveJSON(cacheFile, &cache)
 			if err != nil {
 				log.Printf("Error saving cache: %v\n", err)
 			}
@@ -288,7 +276,7 @@ func (c CreateProjectAction) Do(query string) (string, error) {
 	if err == nil {
 		log.Printf("Got project: %#v\n", project)
 		cache.Account.Data.Projects = append(cache.Account.Data.Projects, project)
-		err := alfred.SaveJson(cacheFile, &cache)
+		err := alfred.SaveJSON(cacheFile, &cache)
 		if err != nil {
 			log.Printf("Error saving cache: %s\n", err)
 		}

@@ -47,7 +47,7 @@ func (c StartAction) Do(query string) (string, error) {
 	if err == nil {
 		log.Printf("Got entry: %#v\n", entry)
 		cache.Account.Data.TimeEntries = append(cache.Account.Data.TimeEntries, entry)
-		err := alfred.SaveJson(cacheFile, &cache)
+		err := alfred.SaveJSON(cacheFile, &cache)
 		if err != nil {
 			log.Printf("Error saving cache: %s\n", err)
 		}

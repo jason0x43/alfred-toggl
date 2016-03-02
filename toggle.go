@@ -63,7 +63,7 @@ func (c ToggleAction) Do(query string) (string, error) {
 				// If a different timer was previously running, refresh everything
 				err = refresh()
 			} else {
-				err = alfred.SaveJson(cacheFile, &cache)
+				err = alfred.SaveJSON(cacheFile, &cache)
 			}
 
 			if err != nil {

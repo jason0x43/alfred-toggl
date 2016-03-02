@@ -27,7 +27,7 @@ func (c LogoutCommand) Items(prefix, query string) ([]alfred.Item, error) {
 
 func (c LogoutCommand) Do(query string) (out string, err error) {
 	config.ApiKey = ""
-	err = alfred.SaveJson(configFile, &config)
+	err = alfred.SaveJSON(configFile, &config)
 	if err != nil {
 		return
 	}

@@ -108,7 +108,7 @@ func (c OptionsCommand) Do(query string) (string, error) {
 		return "", err
 	}
 
-	err = alfred.SaveJson(configFile, &data)
+	err = alfred.SaveJSON(configFile, &data)
 	if err != nil {
 		log.Printf("Error saving cache: %s\n", err)
 	}

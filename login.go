@@ -58,7 +58,7 @@ func (c LoginCommand) Do(query string) (out string, err error) {
 	}
 
 	config.ApiKey = session.ApiToken
-	err = alfred.SaveJson(configFile, &config)
+	err = alfred.SaveJSON(configFile, &config)
 	if err != nil {
 		return
 	}

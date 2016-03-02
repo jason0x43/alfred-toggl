@@ -215,7 +215,7 @@ func (c CreateTagAction) Do(query string) (string, error) {
 	if err == nil {
 		log.Printf("Got tag: %#v\n", tag)
 		cache.Account.Data.Tags = append(cache.Account.Data.Tags, tag)
-		err := alfred.SaveJson(cacheFile, &cache)
+		err := alfred.SaveJSON(cacheFile, &cache)
 		if err != nil {
 			log.Printf("Error saving cache: %s\n", err)
 		}

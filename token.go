@@ -42,7 +42,7 @@ func (c TokenCommand) Do(query string) (string, error) {
 	log.Printf("token: %s", token)
 
 	config.ApiKey = token
-	err = alfred.SaveJson(configFile, &config)
+	err = alfred.SaveJSON(configFile, &config)
 	if err != nil {
 		return "", err
 	}

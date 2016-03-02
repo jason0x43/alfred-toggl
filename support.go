@@ -42,7 +42,7 @@ func refresh() error {
 	cache.Time = time.Now()
 	cache.Account = account
 	cache.Workspace = account.Data.Workspaces[0].Id
-	return alfred.SaveJson(cacheFile, &cache)
+	return alfred.SaveJSON(cacheFile, &cache)
 }
 
 func getRunningTimer() (toggl.TimeEntry, bool) {

@@ -47,13 +47,13 @@ func main() {
 	log.Println("Using config file", configFile)
 	log.Println("Using cache file", cacheFile)
 
-	err = alfred.LoadJson(configFile, &config)
+	err = alfred.LoadJSON(configFile, &config)
 	if err != nil {
 		log.Println("Error loading config:", err)
 	}
 	log.Println("loaded config:", config)
 
-	err = alfred.LoadJson(cacheFile, &cache)
+	err = alfred.LoadJSON(cacheFile, &cache)
 	log.Println("loaded cache")
 
 	commands := []alfred.Command{
