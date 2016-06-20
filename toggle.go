@@ -12,16 +12,23 @@ import (
 // ToggleAction toggles a time entry's running state.
 type ToggleAction struct{}
 
-// Keyword return's the action's keyword.
+// Keyword returns the command's keyword
 func (c ToggleAction) Keyword() string {
 	return "toggle"
 }
 
+// IsEnabled returns true if the command is enabled
 func (c ToggleAction) IsEnabled() bool {
-	return config.ApiKey != ""
+	return config.APIKey != ""
 }
 
-func (c ToggleAction) Do(query string) (string, error) {
+// Do runs the command
+func (c ToggleAction) Do(args []string) (string, error) {
+	var query string
+	if len(args) > 0 {
+		query = args[0]
+	}
+
 	log.Printf("doToggle(%s)", query)
 	id, err := strconv.Atoi(query)
 	if err != nil {
@@ -29,7 +36,7 @@ func (c ToggleAction) Do(query string) (string, error) {
 	}
 
 	adata := &cache.Account.Data
-	session := toggl.OpenSession(config.ApiKey)
+	session := toggl.OpenSession(config.APIKey)
 	running, isRunning := getRunningTimer()
 
 	for i := 0; i < len(adata.TimeEntries); i++ {

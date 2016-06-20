@@ -1,36 +1,40 @@
 package main
 
 import (
-	"log"
-
 	"github.com/jason0x43/go-alfred"
 	"github.com/jason0x43/go-toggl"
 )
 
+// LoginCommand is a command
 type LoginCommand struct{}
 
+// Keyword returns the command's keyword
 func (c LoginCommand) Keyword() string {
 	return "login"
 }
 
+// IsEnabled returns true if the command is enabled
 func (c LoginCommand) IsEnabled() bool {
-	return config.ApiKey == ""
+	return config.APIKey == ""
 }
 
+// MenuItem returns the command's menu item
 func (c LoginCommand) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword(),
 		Arg:          "login",
-		SubtitleAll:  "Login to toggl.com",
+		Subtitle:     "Login to toggl.com",
 	}
 }
 
-func (c LoginCommand) Items(prefix, query string) ([]alfred.Item, error) {
+// Items returns a list of filter items
+func (c LoginCommand) Items(args []string) ([]alfred.Item, error) {
 	return []alfred.Item{c.MenuItem()}, nil
 }
 
-func (c LoginCommand) Do(query string) (out string, err error) {
+// Do runs the command
+func (c LoginCommand) Do(args []string) (out string, err error) {
 	var btn, username string
 	btn, username, err = workflow.GetInput("Email address", "", false)
 	if err != nil {
@@ -38,18 +42,18 @@ func (c LoginCommand) Do(query string) (out string, err error) {
 	}
 
 	if btn != "Ok" {
-		log.Println("User didn't click OK")
+		dlog.Println("User didn't click OK")
 		return
 	}
-	log.Printf("username: %s", username)
+	dlog.Printf("username: %s", username)
 
 	var password string
 	btn, password, err = workflow.GetInput("Password", "", true)
 	if btn != "Ok" {
-		log.Println("User didn't click OK")
+		dlog.Println("User didn't click OK")
 		return
 	}
-	log.Printf("password: *****")
+	dlog.Printf("password: *****")
 
 	var session toggl.Session
 	session, err = toggl.NewSession(username, password)
@@ -57,7 +61,7 @@ func (c LoginCommand) Do(query string) (out string, err error) {
 		return
 	}
 
-	config.ApiKey = session.ApiToken
+	config.APIKey = session.ApiToken
 	err = alfred.SaveJSON(configFile, &config)
 	if err != nil {
 		return

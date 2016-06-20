@@ -11,24 +11,22 @@ import (
 	"github.com/jason0x43/go-toggl"
 )
 
+var dlog = log.New(os.Stderr, "[toggl] ", log.LstdFlags)
 var cacheFile string
 var configFile string
-var config Config
-var cache Cache
-var workflow alfred.Workflow
-
-type Config struct {
-	ApiKey       string `json:"api_key"`
-	DurationOnly bool   `desc:"Extend time entries instead of creating new ones."`
-	Rounding     int    `desc:"Minutes to round to, 0 to disable rounding." help:"%v minute increments"`
-	TestMode     bool
+var config struct {
+	APIKey           string `desc:"Toggl API key"`
+	DurationOnly     bool   `desc:"Extend time entries instead of creating new ones."`
+	Rounding         int    `desc:"Minutes to round to, 0 to disable rounding." help:"%v minute increments"`
+	DefaultProjectID int    `desc:"Optional default project ID"`
+	TestMode         bool   `desc:"If true, disable auto refresh"`
 }
-
-type Cache struct {
+var cache struct {
 	Workspace int
 	Account   toggl.Account
 	Time      time.Time
 }
+var workflow alfred.Workflow
 
 func main() {
 	var err error
@@ -44,23 +42,23 @@ func main() {
 	configFile = path.Join(workflow.DataDir(), "config.json")
 	cacheFile = path.Join(workflow.CacheDir(), "cache.json")
 
-	log.Println("Using config file", configFile)
-	log.Println("Using cache file", cacheFile)
+	dlog.Println("Using config file", configFile)
+	dlog.Println("Using cache file", cacheFile)
 
 	err = alfred.LoadJSON(configFile, &config)
 	if err != nil {
-		log.Println("Error loading config:", err)
+		dlog.Println("Error loading config:", err)
 	}
-	log.Println("loaded config:", config)
+	dlog.Println("loaded config:", config)
 
 	err = alfred.LoadJSON(cacheFile, &cache)
-	log.Println("loaded cache")
+	dlog.Println("loaded cache")
 
 	commands := []alfred.Command{
 		LoginCommand{},
 		TokenCommand{},
-		TimeEntryFilter{},
-		ProjectFilter{},
+		TimeEntryCommand{},
+		ProjectCommand{},
 		TagFilter{},
 		ReportFilter{},
 		SyncFilter{},
@@ -68,9 +66,6 @@ func main() {
 		LogoutCommand{},
 		ResetCommand{},
 		StartAction{},
-		UpdateTimeEntryAction{},
-		UpdateProjectAction{},
-		CreateProjectAction{},
 		UpdateTagAction{},
 		CreateTagAction{},
 		ToggleAction{},

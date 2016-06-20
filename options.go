@@ -6,33 +6,41 @@ import (
 	"log"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/jason0x43/go-alfred"
 )
 
+// OptionsCommand is a command
 type OptionsCommand struct{}
 
+// Keyword returns the command's keyword
 func (c OptionsCommand) Keyword() string {
 	return "options"
 }
 
+// IsEnabled returns true if the command is enabled
 func (c OptionsCommand) IsEnabled() bool {
-	return config.ApiKey != ""
+	return config.APIKey != ""
 }
 
+// MenuItem returns the command's menu item
 func (c OptionsCommand) MenuItem() alfred.Item {
-	return alfred.Item{
-		Title:        c.Keyword(),
-		Autocomplete: c.Keyword() + " ",
-		SubtitleAll:  "Set options",
-		Valid:        alfred.Invalid,
-	}
+	return alfred.NewKeywordItem(c.Keyword(), "Set options")
 }
 
-func (c OptionsCommand) Items(prefix, query string) (items []alfred.Item, err error) {
+// Items returns a list of filter items
+func (c OptionsCommand) Items(args []string) (items []alfred.Item, err error) {
 	ct := reflect.TypeOf(config)
 	cfg := reflect.Indirect(reflect.ValueOf(config))
+
+	var query string
+	if len(args) > 0 {
+		query = args[0]
+	}
+
+	prefix := c.Keyword() + " "
+
+	dlog.Printf("options args: %#v", args)
 
 	for i := 0; i < ct.NumField(); i++ {
 		field := ct.Field(i)
@@ -41,7 +49,7 @@ func (c OptionsCommand) Items(prefix, query string) (items []alfred.Item, err er
 			continue
 		}
 
-		parts := strings.SplitN(query, " ", 2)
+		parts := alfred.CleanSplitN(query, " ", 2)
 		if !alfred.FuzzyMatches(field.Name, parts[0]) {
 			continue
 		}
@@ -89,7 +97,7 @@ func (c OptionsCommand) Items(prefix, query string) (items []alfred.Item, err er
 					item.Title += fmt.Sprintf("%d minute increments", val)
 				}
 
-				item.Valid = alfred.Invalid
+				item.Invalid = true
 			}
 		}
 
@@ -99,18 +107,23 @@ func (c OptionsCommand) Items(prefix, query string) (items []alfred.Item, err er
 	return
 }
 
-func (c OptionsCommand) Do(query string) (string, error) {
+// Do runs the command
+func (c OptionsCommand) Do(args []string) (string, error) {
+	var query string
+	if len(args) > 0 {
+		query = args[0]
+	}
+
 	log.Printf("options '%s'", query)
 
-	var data Config
-	err := json.Unmarshal([]byte(query), &data)
+	err := json.Unmarshal([]byte(query), &config)
 	if err != nil {
 		return "", err
 	}
 
-	err = alfred.SaveJSON(configFile, &data)
+	err = alfred.SaveJSON(configFile, &config)
 	if err != nil {
-		log.Printf("Error saving cache: %s\n", err)
+		log.Printf("Error saving config: %s\n", err)
 	}
 
 	return "", err

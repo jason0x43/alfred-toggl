@@ -13,17 +13,26 @@ type startMessage struct {
 	Pid         int
 }
 
+// StartAction is a command
 type StartAction struct{}
 
-func (c StartAction) IsEnabled() bool {
-	return config.ApiKey != ""
-}
-
+// Keyword returns the command's keyword
 func (c StartAction) Keyword() string {
 	return "start"
 }
 
-func (c StartAction) Do(query string) (string, error) {
+// IsEnabled returns true if the command is enabled
+func (c StartAction) IsEnabled() bool {
+	return config.APIKey != ""
+}
+
+// Do runs the command
+func (c StartAction) Do(args []string) (string, error) {
+	var query string
+	if len(args) > 0 {
+		query = args[0]
+	}
+
 	log.Printf("start '%s'", query)
 
 	var data startMessage
@@ -32,7 +41,7 @@ func (c StartAction) Do(query string) (string, error) {
 		return "", err
 	}
 
-	session := toggl.OpenSession(config.ApiKey)
+	session := toggl.OpenSession(config.APIKey)
 	if err != nil {
 		return "", err
 	}

@@ -31,7 +31,7 @@ func checkRefresh() error {
 }
 
 func refresh() error {
-	s := toggl.OpenSession(config.ApiKey)
+	s := toggl.OpenSession(config.APIKey)
 	account, err := s.GetAccount()
 	if err != nil {
 		return err
@@ -55,12 +55,12 @@ func getRunningTimer() (toggl.TimeEntry, bool) {
 	return toggl.TimeEntry{}, false
 }
 
-func getProjectsById() map[int]toggl.Project {
-	projectsById := map[int]toggl.Project{}
+func getProjectsByID() map[int]toggl.Project {
+	projectsByID := map[int]toggl.Project{}
 	for _, proj := range cache.Account.Data.Projects {
-		projectsById[proj.Id] = proj
+		projectsByID[proj.Id] = proj
 	}
-	return projectsById
+	return projectsByID
 }
 
 func getProjectsByName() map[string]toggl.Project {
@@ -80,13 +80,32 @@ func findProjectByName(name string) (toggl.Project, bool) {
 	return toggl.Project{}, false
 }
 
-func findTimerById(id int) (toggl.TimeEntry, bool) {
+func findProjectByID(id int) (toggl.Project, bool) {
+	for _, proj := range cache.Account.Data.Projects {
+		if proj.Id == id {
+			return proj, true
+		}
+	}
+	return toggl.Project{}, false
+}
+
+func findTimerByID(id int) (toggl.TimeEntry, bool) {
 	for _, entry := range cache.Account.Data.TimeEntries[:] {
 		if entry.Id == id {
 			return entry, true
 		}
 	}
 	return toggl.TimeEntry{}, false
+}
+
+func findTimersByProjectID(pid int) []toggl.TimeEntry {
+	var entries []toggl.TimeEntry
+	for _, entry := range cache.Account.Data.TimeEntries[:] {
+		if entry.Pid == pid {
+			entries = append(entries, entry)
+		}
+	}
+	return entries
 }
 
 func findTagByName(name string) (toggl.Tag, bool) {
@@ -164,175 +183,12 @@ func getLatestTimeEntriesForTag(tag string) []toggl.TimeEntry {
 
 func tagHasTimeEntries(tag string) bool {
 	entries := cache.Account.Data.TimeEntries
-	for i, _ := range entries {
+	for i := range entries {
 		if entries[i].HasTag(tag) {
 			return true
 		}
 	}
 	return false
-}
-
-func createReportItems(prefix string, parts []string, since, until time.Time) ([]alfred.Item, error) {
-	var items []alfred.Item
-
-	report, err := generateReport(since, until)
-	if err != nil {
-		return items, err
-	}
-
-	span := parts[0]
-
-	log.Printf("got report with %d projects\n", len(report.projects))
-	log.Printf("parts: %#v\n", parts)
-
-	if len(report.projects) > 0 {
-		var total int64
-		var totalName string
-		var name string
-
-		if len(parts) > 1 {
-			name = parts[1]
-		}
-
-		terminator := strings.Index(name, alfred.Terminator)
-		if terminator != -1 {
-			name := name[:terminator]
-
-			var project *projectEntry
-			for _, proj := range report.projects {
-				if proj.name == name {
-					project = proj
-					break
-				}
-			}
-
-			if project == nil {
-				return items, fmt.Errorf("Couldn't find project '%s'", name)
-			}
-
-			for _, entry := range project.entries {
-				item := alfred.Item{
-					Valid:       alfred.Invalid,
-					Title:       entry.description,
-					SubtitleAll: fmt.Sprintf("%.2f", float32(entry.total)/100.0)}
-
-				if entry.running {
-					item.Icon = "running.png"
-				}
-
-				items = append(items, item)
-			}
-
-			total = project.total
-			totalName = span + " for " + project.name
-		} else {
-			// no project name terminator, so filter projects by name
-			for _, project := range report.projects {
-				entryTitle := project.name
-				if alfred.FuzzyMatches(entryTitle, name) {
-					item := alfred.Item{
-						Valid:        alfred.Invalid,
-						Autocomplete: prefix + span + alfred.Separator + " " + entryTitle + alfred.Terminator,
-						Title:        entryTitle,
-						SubtitleAll:  fmt.Sprintf("%.2f", float32(project.total)/100.0),
-					}
-
-					if project.running {
-						item.Icon = "running.png"
-					}
-
-					items = append(items, item)
-					total += project.total
-				}
-			}
-
-			if name == "" {
-				totalName = strings.TrimRight(prefix, " ")
-			}
-		}
-
-		sort.Sort(alfred.ByTitle(items))
-
-		if totalName != "" {
-			item := alfred.Item{
-				Title:        fmt.Sprintf("Total hours %s: %.2f", totalName, float32(total)/100.0),
-				Valid:        alfred.Invalid,
-				Autocomplete: prefix + strings.Join(parts, alfred.Separator+" "),
-				SubtitleAll:  alfred.Line,
-			}
-			items = alfred.InsertItem(items, item, 0)
-		}
-	}
-
-	return items, nil
-}
-
-func generateReport(since, until time.Time) (*summaryReport, error) {
-	log.Printf("Generating report from %s to %s", since, until)
-
-	report := summaryReport{projects: map[string]*projectEntry{}}
-	projects := getProjectsById()
-
-	for _, entry := range cache.Account.Data.TimeEntries {
-		start := entry.StartTime()
-
-		if !start.Before(since) && !until.Before(start) {
-			var projectName string
-
-			if entry.Pid == 0 {
-				projectName = "<No project>"
-			} else {
-				proj, _ := projects[entry.Pid]
-				projectName = proj.Name
-				log.Printf("  Project for %v: %v", entry.Pid, proj)
-			}
-
-			if _, ok := report.projects[projectName]; !ok {
-				report.projects[projectName] = &projectEntry{
-					name:    projectName,
-					id:      entry.Pid,
-					entries: map[string]*timeEntry{}}
-			}
-
-			project := report.projects[projectName]
-			duration := entry.Duration
-
-			if duration < 0 {
-				duration = int64(time.Now().Sub(entry.StartTime()).Seconds())
-				project.running = true
-			}
-
-			duration = roundDuration(duration)
-			log.Printf("  duration: %v", duration)
-
-			if _, ok := project.entries[entry.Description]; !ok {
-				project.entries[entry.Description] = &timeEntry{description: entry.Description}
-			}
-
-			if project.running {
-				project.entries[entry.Description].running = true
-			}
-
-			project.entries[entry.Description].total += duration
-			project.total += duration
-			report.total += duration
-			log.Printf("  report.total = %v", report.total)
-		}
-	}
-
-	return &report, nil
-}
-
-// return a datetime at the minimum time on the given date
-func toDayStart(date time.Time) time.Time {
-	date = date.In(time.Local)
-	return time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.Local)
-}
-
-// return a datetime at the maximum time on the given date
-func toDayEnd(date time.Time) time.Time {
-	date = date.In(time.Local)
-	return time.Date(date.Year(), date.Month(), date.Day(), 23, 59, 59, 999999999, time.Local)
 }
 
 // is date1's date before date2's date
@@ -390,25 +246,6 @@ func roundDuration(duration int64) int64 {
 		hours := float64(duration) / 3600.0
 		return int64(hours * 100)
 	}
-}
-
-type timeEntry struct {
-	total       int64
-	running     bool
-	description string
-}
-
-type projectEntry struct {
-	total   int64
-	name    string
-	id      int
-	running bool
-	entries map[string]*timeEntry
-}
-
-type summaryReport struct {
-	total    int64
-	projects map[string]*projectEntry
 }
 
 type byTime []toggl.TimeEntry

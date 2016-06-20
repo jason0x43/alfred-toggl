@@ -10,21 +10,30 @@ import (
 
 type deleteMessage struct {
 	Type string
-	Id   int
+	ID   int
 }
 
+// DeleteAction is a command
 type DeleteAction struct{}
 
+// Keyword returns the command's keyword
 func (c DeleteAction) Keyword() string {
 	return "delete"
 }
 
+// IsEnabled returns true if the command is enabled
 func (c DeleteAction) IsEnabled() bool {
-	return config.ApiKey != ""
+	return config.APIKey != ""
 }
 
-func (c DeleteAction) Do(query string) (string, error) {
-	log.Printf("delete %s", query)
+// Do runs the command
+func (c DeleteAction) Do(args []string) (string, error) {
+	log.Printf("delete %v", args)
+	var query string
+
+	if len(args) > 0 {
+		query = args[0]
+	}
 
 	var message deleteMessage
 	err := json.Unmarshal([]byte(query), &message)
@@ -32,7 +41,7 @@ func (c DeleteAction) Do(query string) (string, error) {
 		return "", err
 	}
 
-	session := toggl.OpenSession(config.ApiKey)
+	session := toggl.OpenSession(config.APIKey)
 	accountData := &cache.Account.Data
 	var result struct {
 		found   bool
@@ -43,7 +52,7 @@ func (c DeleteAction) Do(query string) (string, error) {
 	switch message.Type {
 	case "time entry":
 		for i, entry := range accountData.TimeEntries {
-			if entry.Id == message.Id {
+			if entry.Id == message.ID {
 				result.found = true
 				result.name = entry.Description
 				prompt := fmt.Sprintf("Are you sure you want to delete timer '%s'?", entry.Description)
@@ -68,7 +77,7 @@ func (c DeleteAction) Do(query string) (string, error) {
 		}
 	case "project":
 		for i, project := range accountData.Projects {
-			if project.Id == message.Id {
+			if project.Id == message.ID {
 				result.found = true
 				result.name = project.Name
 				prompt := fmt.Sprintf("Are you sure you want to delete project '%s'?", project.Name)
@@ -93,7 +102,7 @@ func (c DeleteAction) Do(query string) (string, error) {
 		}
 	case "tag":
 		for i, tag := range accountData.Tags {
-			if tag.Id == message.Id {
+			if tag.Id == message.ID {
 				result.found = true
 				result.name = tag.Name
 				prompt := fmt.Sprintf("Are you sure you want to delete tag '%s'?", tag.Name)
@@ -126,5 +135,5 @@ func (c DeleteAction) Do(query string) (string, error) {
 		return "Deleted " + result.name, nil
 	}
 
-	return "", fmt.Errorf("Invalid %s ID %d", message.Type, message.Id)
+	return "", fmt.Errorf("Invalid %s ID %d", message.Type, message.ID)
 }

@@ -12,33 +12,46 @@ import (
 
 // tag filter --------------------------------------------
 
+// TagFilter is a command
 type TagFilter struct{}
 
+// Keyword returns the command's keyword
 func (c TagFilter) Keyword() string {
 	return "tags"
 }
 
+// IsEnabled returns true if the command is enabled
 func (c TagFilter) IsEnabled() bool {
-	return config.ApiKey != ""
+	return config.APIKey != ""
 }
 
+// MenuItem returns the command's menu item
 func (c TagFilter) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword() + " ",
-		Valid:        alfred.Invalid,
-		SubtitleAll:  "List your tags",
+		Invalid:      true,
+		Subtitle:     "List your tags",
 	}
 }
 
-func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
+// Items returns a list of filter items
+func (c TagFilter) Items(args []string) ([]alfred.Item, error) {
 	var items []alfred.Item
 	if err := checkRefresh(); err != nil {
 		return items, err
 	}
 
+	var query string
+	if len(args) > 0 {
+		query = args[0]
+	}
+
 	parts := alfred.TrimAllLeft(strings.Split(query, alfred.Separator))
 	log.Printf("parts: %d", len(parts))
+
+	// TODO: get rid of this
+	prefix := ""
 
 	if len(parts) > 1 {
 		tag, found := findTagByName(parts[0])
@@ -55,14 +68,14 @@ func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
 			entries := getLatestTimeEntriesForTag(tag.Name)
 			if len(entries) == 0 {
 				items = append(items, alfred.Item{
-					Title: "No time entries",
-					Valid: alfred.Invalid,
+					Title:   "No time entries",
+					Invalid: true,
 				})
 			} else {
 				for _, entry := range entries {
 					items = append(items, alfred.Item{
-						Title: entry.Description,
-						Valid: alfred.Invalid,
+						Title:   entry.Description,
+						Invalid: true,
 					})
 				}
 			}
@@ -86,7 +99,7 @@ func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
 				items = append(items, alfred.Item{
 					Title:        "name: " + tag.Name,
 					Autocomplete: prefix + " name" + alfred.Separator + " ",
-					Valid:        alfred.Invalid,
+					Invalid:      true,
 				})
 			}
 			if alfred.FuzzyMatches("timers", subcommand) {
@@ -99,11 +112,11 @@ func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
 				items = append(items, alfred.Item{
 					Title:        title,
 					Autocomplete: prefix + " timers",
-					Valid:        alfred.Invalid,
+					Invalid:      true,
 				})
 			}
 			if alfred.FuzzyMatches("delete", subcommand) {
-				data := deleteMessage{Type: "tag", Id: tag.Id}
+				data := deleteMessage{Type: "tag", ID: tag.Id}
 				dataString, _ := json.Marshal(data)
 
 				items = append(items, alfred.Item{
@@ -119,7 +132,7 @@ func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
 				items = append(items, alfred.Item{
 					Title:        entry.Name,
 					Autocomplete: prefix + entry.Name + alfred.Separator + " ",
-					Valid:        alfred.Invalid,
+					Invalid:      true,
 				})
 			}
 		}
@@ -129,9 +142,9 @@ func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
 			dataString, _ := json.Marshal(data)
 
 			items = append(items, alfred.Item{
-				Title:       parts[0],
-				SubtitleAll: "New tag",
-				Arg:         "create-tag " + string(dataString),
+				Title:    parts[0],
+				Subtitle: "New tag",
+				Arg:      "create-tag " + string(dataString),
 			})
 		}
 	}
@@ -141,17 +154,26 @@ func (c TagFilter) Items(prefix, query string) ([]alfred.Item, error) {
 
 // update-tag --------------------------------------------
 
+// UpdateTagAction is a command
 type UpdateTagAction struct{}
 
+// Keyword returns the command's keyword
 func (c UpdateTagAction) Keyword() string {
 	return "update-tag"
 }
 
+// IsEnabled returns true if the command is enabled
 func (c UpdateTagAction) IsEnabled() bool {
-	return config.ApiKey != ""
+	return config.APIKey != ""
 }
 
-func (c UpdateTagAction) Do(query string) (string, error) {
+// Do runs the command
+func (c UpdateTagAction) Do(args []string) (string, error) {
+	var query string
+	if len(args) > 0 {
+		query = args[0]
+	}
+
 	log.Printf("update-tag %s", query)
 
 	var tag toggl.Tag
@@ -160,7 +182,7 @@ func (c UpdateTagAction) Do(query string) (string, error) {
 		return "", fmt.Errorf("Invalid time entry %v", query)
 	}
 
-	session := toggl.OpenSession(config.ApiKey)
+	session := toggl.OpenSession(config.APIKey)
 
 	tag, err = session.UpdateTag(tag)
 	if err != nil {
@@ -182,16 +204,20 @@ type createTagMessage struct {
 	Wid  int
 }
 
+// CreateTagAction is a command
 type CreateTagAction struct{}
 
-func (c CreateTagAction) IsEnabled() bool {
-	return config.ApiKey != ""
-}
-
+// Keyword returns the command's keyword
 func (c CreateTagAction) Keyword() string {
 	return "create-tag"
 }
 
+// IsEnabled returns true if the command is enabled
+func (c CreateTagAction) IsEnabled() bool {
+	return config.APIKey != ""
+}
+
+// Do runs the command
 func (c CreateTagAction) Do(query string) (string, error) {
 	log.Printf("create-tag '%s'", query)
 
@@ -201,7 +227,7 @@ func (c CreateTagAction) Do(query string) (string, error) {
 		return "", err
 	}
 
-	session := toggl.OpenSession(config.ApiKey)
+	session := toggl.OpenSession(config.APIKey)
 	if err != nil {
 		return "", err
 	}

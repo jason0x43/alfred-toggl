@@ -2,165 +2,62 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
-	"log"
-	"strings"
+	"strconv"
 
 	"github.com/jason0x43/go-alfred"
 	"github.com/jason0x43/go-toggl"
 )
 
-// project -----------------------------------------------
+// ProjectCommand is a command for handling projects
+type ProjectCommand struct{}
 
-// ProjectFilter is a command for handling projects
-type ProjectFilter struct{}
-
-// Keyword returns the keyword for the projects command
-func (c ProjectFilter) Keyword() string {
+// Keyword returns the command's keyword
+func (c ProjectCommand) Keyword() string {
 	return "projects"
 }
 
-func (c ProjectFilter) IsEnabled() bool {
-	return config.ApiKey != ""
+// IsEnabled returns true if the command is enabled
+func (c ProjectCommand) IsEnabled() bool {
+	return config.APIKey != ""
 }
 
-func (c ProjectFilter) MenuItem() alfred.Item {
-	return alfred.Item{
-		Title:        c.Keyword(),
-		Autocomplete: c.Keyword() + " ",
-		Valid:        alfred.Invalid,
-		SubtitleAll:  "List your projects, add new ones",
-	}
+// MenuItem returns the command's menu item
+func (c ProjectCommand) MenuItem() alfred.Item {
+	return alfred.NewKeywordItem(c.Keyword(), "List your projects, add new ones")
 }
 
-func (c ProjectFilter) Items(prefix, query string) ([]alfred.Item, error) {
-	var items []alfred.Item
-	if err := checkRefresh(); err != nil {
-		return items, err
+// Items returns a list of filter items
+func (c ProjectCommand) Items(args []string) (items []alfred.Item, err error) {
+	if err = checkRefresh(); err != nil {
+		return
 	}
 
-	parts := alfred.TrimAllLeft(strings.Split(query, alfred.Separator))
-	log.Printf("parts: %s", parts)
+	var projectID int
 
-	projectName := parts[0]
-	project, _ := findProjectByName(projectName)
+	flags := flag.NewFlagSet("projectFlags", flag.ContinueOnError)
+	flags.IntVar(&projectID, "project", -1, "Project ID")
+	flags.Parse(args)
 
-	if len(parts) > 1 {
-		subcommand := parts[1]
-		log.Printf("subcommand: " + subcommand)
+	query := flags.Arg(0)
+	dlog.Printf("query: %s", query)
 
-		switch subcommand {
-		case "timers":
-			// list time entries and let user start a new one
-			var timerName string
-			if len(parts) > 2 {
-				timerName = parts[2]
-			}
+	runningTimer, isRunning := getRunningTimer()
 
-			prefix += projectName + alfred.Separator + " entries" + alfred.Separator
-			entries := getLatestTimeEntriesForProject(project.Id)
-
-			addItem := func(title, subtitle, autocomplete string) {
-				data := startMessage{
-					Pid:         project.Id,
-					Description: title,
-				}
-
-				dataString, _ := json.Marshal(data)
-
-				item := alfred.Item{
-					Title:        title,
-					SubtitleAll:  subtitle,
-					Autocomplete: autocomplete,
-					Arg:          "start " + string(dataString),
-				}
-				log.Println("arg:", item.Arg)
-				items = append(items, item)
-			}
-
-			for _, entry := range entries {
-				if alfred.FuzzyMatches(entry.Description, timerName) {
-					addItem(entry.Description, "", prefix+" "+entry.Description)
-				}
-			}
-
-			if len(items) == 0 && timerName != "" {
-				addItem(timerName, "New timer for "+projectName, "")
-			}
-
-			if len(items) == 0 {
-				if timerName != "" {
-					addItem(timerName, "New timer for "+projectName, "")
-				} else {
-					items = append(items, alfred.Item{Title: "No time entries"})
-				}
-			}
-
-		case "name":
-			name := projectName
-			arg := ""
-			if len(parts) > 2 && parts[2] != "" {
-				name = parts[2]
-				updateProject := project
-				updateProject.Name = name
-				dataString, _ := json.Marshal(updateProject)
-				arg = "update-project " + string(dataString)
-			}
-			items = append(items, alfred.Item{
-				Title: "name: " + name,
-				Arg:   arg,
-			})
-
-		default:
-			if alfred.FuzzyMatches("name", subcommand) {
-				items = append(items, alfred.Item{
-					Title:        "name: " + project.Name,
-					Autocomplete: prefix + project.Name + alfred.Separator + " name" + alfred.Separator + " ",
-					Valid:        alfred.Invalid,
-				})
-			}
-			if alfred.FuzzyMatches("timers", subcommand) {
-				title := "timers: "
-				if projectHasTimeEntries(project.Id) {
-					title += "..."
-				} else {
-					title += "<None>"
-				}
-				items = append(items, alfred.Item{
-					Title:        title,
-					Autocomplete: prefix + project.Name + alfred.Separator + " timers" + alfred.Separator + " ",
-					Valid:        alfred.Invalid,
-				})
-			}
-			if alfred.FuzzyMatches("delete", subcommand) {
-				data := deleteMessage{Type: "project", Id: project.Id}
-				dataString, _ := json.Marshal(data)
-
-				items = append(items, alfred.Item{
-					Title:        "delete",
-					Arg:          "delete " + string(dataString),
-					Autocomplete: prefix + project.Name + alfred.Separator + " delete",
-				})
-			}
-
-			if len(items) == 0 {
-				items = append(items, alfred.Item{
-					Title: fmt.Sprintf("Unknown keyword '%s'", subcommand),
-					Valid: alfred.Invalid,
-				})
-			}
+	if projectID != -1 {
+		// List menu for a project
+		if project, ok := findProjectByID(projectID); ok {
+			return projectItems(project, query)
 		}
 	} else {
-		// list projects
-		runningTimer, isRunning := getRunningTimer()
-
 		for _, entry := range cache.Account.Data.Projects {
 			if alfred.FuzzyMatches(entry.Name, query) {
 				item := alfred.Item{
 					Title:        entry.Name,
-					SubtitleAll:  "",
-					Valid:        alfred.Invalid,
-					Autocomplete: prefix + entry.Name + alfred.Separator + " ",
+					Subtitle:     "",
+					Autocomplete: entry.Name,
+					Arg:          fmt.Sprintf("%d", entry.Id),
 				}
 
 				if isRunning && runningTimer.Pid == entry.Id {
@@ -172,16 +69,16 @@ func (c ProjectFilter) Items(prefix, query string) ([]alfred.Item, error) {
 		}
 
 		if len(items) == 0 && query != "" {
-			data := createProjectMessage{Name: parts[0]}
+			data := createProjectMessage{Name: query}
 			dataString, _ := json.Marshal(data)
 
 			items = append(items, alfred.Item{
-				Title:       parts[0],
-				SubtitleAll: "New project",
-				Arg:         "create-project " + string(dataString),
+				Title:    query,
+				Subtitle: "New project",
+				Arg:      "-create " + strconv.Quote(string(dataString)),
 			})
 		} else if query != "" {
-			alfred.SortItemsForKeyword(items, query)
+			items = alfred.SortItemsForKeyword(items, query)
 		}
 
 		if len(items) == 0 {
@@ -192,32 +89,84 @@ func (c ProjectFilter) Items(prefix, query string) ([]alfred.Item, error) {
 	return items, nil
 }
 
-// update-project ----------------------------------------
+// Do runs the command
+func (c ProjectCommand) Do(args []string) (out string, err error) {
+	var defaultID int
+	var toCreate string
+	var toUpdate string
 
-type UpdateProjectAction struct{}
+	flags := flag.NewFlagSet("projectFlags", flag.ContinueOnError)
+	flags.IntVar(&defaultID, "default", -1, "Project ID to set as default")
+	flags.StringVar(&toCreate, "create", "", "New project data")
+	flags.StringVar(&toUpdate, "update", "", "Updated project data")
+	flags.Parse(args)
 
-func (c UpdateProjectAction) Keyword() string {
-	return "update-project"
-}
-
-func (c UpdateProjectAction) IsEnabled() bool {
-	return config.ApiKey != ""
-}
-
-func (c UpdateProjectAction) Do(query string) (string, error) {
-	log.Printf("update-project %s", query)
-
-	var project toggl.Project
-	err := json.Unmarshal([]byte(query), &project)
-	if err != nil {
-		return "", fmt.Errorf("Invalid time entry %v", query)
+	if defaultID != -1 {
+		dlog.Printf("setting default project to %v", defaultID)
+		config.DefaultProjectID = defaultID
+		alfred.SaveJSON(configFile, &config)
 	}
 
-	session := toggl.OpenSession(config.ApiKey)
+	if toCreate != "" {
+		dlog.Printf("creating project %v", toCreate)
+		var project toggl.Project
+		if project, err = createProject(toCreate); err != nil {
+			return
+		}
+		return fmt.Sprintf(`Created project "%s"`, project.Name), nil
+	}
 
-	project, err = session.UpdateProject(project)
-	if err != nil {
-		return "", err
+	if toUpdate != "" {
+		dlog.Printf("updating project %v", toUpdate)
+		var project toggl.Project
+		if project, err = updateProject(toUpdate); err != nil {
+			return
+		}
+		return fmt.Sprintf(`Updated project "%s"`, project.Name), nil
+	}
+
+	return "Unrecognized input", nil
+}
+
+// support -------------------------------------------------------------------
+
+type createProjectMessage struct {
+	Name string
+	WID  int
+}
+
+func createProject(dataString string) (project toggl.Project, err error) {
+	var message createProjectMessage
+	if err = json.Unmarshal([]byte(dataString), &message); err != nil {
+		return
+	}
+
+	session := toggl.OpenSession(config.APIKey)
+
+	if message.WID == 0 {
+		message.WID = cache.Account.Data.Workspaces[0].Id
+	}
+
+	if project, err = session.CreateProject(message.Name, message.WID); err == nil {
+		dlog.Printf("Got project: %#v\n", project)
+		cache.Account.Data.Projects = append(cache.Account.Data.Projects, project)
+		if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
+			dlog.Printf("Error saving cache: %s\n", err)
+		}
+	}
+
+	return
+}
+
+func updateProject(dataString string) (project toggl.Project, err error) {
+	if err = json.Unmarshal([]byte(dataString), &project); err != nil {
+		return
+	}
+
+	session := toggl.OpenSession(config.APIKey)
+
+	if project, err = session.UpdateProject(project); err != nil {
+		return
 	}
 
 	adata := &cache.Account.Data
@@ -225,62 +174,57 @@ func (c UpdateProjectAction) Do(query string) (string, error) {
 	for i, p := range adata.Projects {
 		if p.Id == project.Id {
 			adata.Projects[i] = project
-			err = alfred.SaveJSON(cacheFile, &cache)
-			if err != nil {
-				log.Printf("Error saving cache: %v\n", err)
+			if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
+				dlog.Printf("Error saving cache: %v\n", err)
 			}
 			break
 		}
 	}
 
-	return fmt.Sprintf("Updated '%s'", project.Name), nil
+	return
 }
 
-// create-project ----------------------------------------
+func projectItems(project toggl.Project, query string) (items []alfred.Item, err error) {
+	if alfred.PartiallyPrefixes("name:", query) {
+		item := alfred.Item{}
+		parts := alfred.CleanSplitN(query, " ", 2)
 
-type createProjectMessage struct {
-	Name string
-	Wid  int
-}
-
-type CreateProjectAction struct{}
-
-func (c CreateProjectAction) IsEnabled() bool {
-	return config.ApiKey != ""
-}
-
-func (c CreateProjectAction) Keyword() string {
-	return "create-project"
-}
-
-func (c CreateProjectAction) Do(query string) (string, error) {
-	log.Printf("create-project '%s'", query)
-
-	var data createProjectMessage
-	err := json.Unmarshal([]byte(query), &data)
-	if err != nil {
-		return "", err
-	}
-
-	session := toggl.OpenSession(config.ApiKey)
-	if err != nil {
-		return "", err
-	}
-
-	var project toggl.Project
-	if data.Wid == 0 {
-		data.Wid = cache.Account.Data.Workspaces[0].Id
-	}
-	project, err = session.CreateProject(data.Name, data.Wid)
-
-	if err == nil {
-		log.Printf("Got project: %#v\n", project)
-		cache.Account.Data.Projects = append(cache.Account.Data.Projects, project)
-		err := alfred.SaveJSON(cacheFile, &cache)
-		if err != nil {
-			log.Printf("Error saving cache: %s\n", err)
+		if len(parts) > 1 {
+			newName := parts[1]
+			updateEntry := project
+			updateEntry.Name = newName
+			dataString, _ := json.Marshal(updateEntry)
+			item.Title = fmt.Sprintf("Change name to '%s'", newName)
+			item.Subtitle = "Name: " + project.Name
+			item.Arg = "-update " + strconv.Quote(string(dataString))
+		} else {
+			item.Title = "Name: " + project.Name
+			item.Autocomplete = "Name: "
+			item.Invalid = true
 		}
+
+		dlog.Printf("name item: %#v", item)
+
+		items = append(items, item)
 	}
 
-	return fmt.Sprintf("Created project '%s'", data.Name), err
+	if alfred.PartiallyPrefixes("Make default", query) {
+		items = append(items, alfred.Item{
+			Title:        "Make default",
+			Subtitle:     "Make this the default project",
+			Autocomplete: "Make default",
+			Arg:          fmt.Sprintf("-default=%d", project.Id),
+		})
+	}
+
+	if alfred.PartiallyPrefixes("timers", query) {
+		items = append(items, alfred.Item{
+			Title:        "Timers...",
+			Subtitle:     "List associated time entries",
+			Autocomplete: "Timers...",
+			Arg:          "-timers",
+		})
+	}
+
+	return
 }

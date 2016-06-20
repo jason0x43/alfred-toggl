@@ -6,30 +6,36 @@ import (
 	"github.com/jason0x43/go-alfred"
 )
 
+// TokenCommand is a command
 type TokenCommand struct{}
 
+// Keyword returns the command's keyword
 func (c TokenCommand) Keyword() string {
 	return "token"
 }
 
+// IsEnabled returns true if the command is enabled
 func (c TokenCommand) IsEnabled() bool {
-	return config.ApiKey == ""
+	return config.APIKey == ""
 }
 
+// MenuItem returns the command's menu item
 func (c TokenCommand) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword(),
 		Arg:          "token",
-		SubtitleAll:  "Manually enter toggl.com API token",
+		Subtitle:     "Manually enter toggl.com API token",
 	}
 }
 
-func (c TokenCommand) Items(prefix, query string) ([]alfred.Item, error) {
+// Items returns a list of filter items
+func (c TokenCommand) Items(args []string) ([]alfred.Item, error) {
 	return []alfred.Item{c.MenuItem()}, nil
 }
 
-func (c TokenCommand) Do(query string) (string, error) {
+// Do runs the command
+func (c TokenCommand) Do(args []string) (string, error) {
 	btn, token, err := workflow.GetInput("API token", "", false)
 	if err != nil {
 		return "", err
@@ -41,7 +47,7 @@ func (c TokenCommand) Do(query string) (string, error) {
 	}
 	log.Printf("token: %s", token)
 
-	config.ApiKey = token
+	config.APIKey = token
 	err = alfred.SaveJSON(configFile, &config)
 	if err != nil {
 		return "", err
