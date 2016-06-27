@@ -21,7 +21,7 @@ func (c LogoutCommand) MenuItem() alfred.Item {
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword(),
 		Subtitle:     "Logout of Toggl, but keep any local config",
-		Arg:          "logout",
+		// Arg:          "logout",
 	}
 }
 

@@ -31,7 +31,7 @@ func (c ResetCommand) MenuItem() alfred.Item {
 // Items returns a list of filter items
 func (c ResetCommand) Items(args []string) ([]alfred.Item, error) {
 	item := c.MenuItem()
-	item.Arg = "reset"
+	// item.Arg = "reset"
 	return []alfred.Item{item}, nil
 }
 

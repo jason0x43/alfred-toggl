@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"strings"
 
@@ -12,54 +11,38 @@ import (
 
 // tag filter --------------------------------------------
 
-// TagFilter is a command
-type TagFilter struct{}
-
-// Keyword returns the command's keyword
-func (c TagFilter) Keyword() string {
-	return "tags"
-}
+// TagCommand is a command
+type TagCommand struct{}
 
 // IsEnabled returns true if the command is enabled
-func (c TagFilter) IsEnabled() bool {
+func (c TagCommand) IsEnabled() bool {
 	return config.APIKey != ""
 }
 
-// MenuItem returns the command's menu item
-func (c TagFilter) MenuItem() alfred.Item {
-	return alfred.Item{
-		Title:        c.Keyword(),
-		Autocomplete: c.Keyword() + " ",
-		Invalid:      true,
-		Subtitle:     "List your tags",
+// About returns information about this command
+func (c TagCommand) About() *alfred.CommandDef {
+	return &alfred.CommandDef{
+		Keyword:     "tag",
+		Description: "List your tags",
+		WithSpace:   true,
 	}
 }
 
 // Items returns a list of filter items
-func (c TagFilter) Items(args []string) ([]alfred.Item, error) {
-	var items []alfred.Item
-	if err := checkRefresh(); err != nil {
-		return items, err
+func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
+	if err = checkRefresh(); err != nil {
+		return
 	}
 
-	var query string
-	if len(args) > 0 {
-		query = args[0]
-	}
-
-	parts := alfred.TrimAllLeft(strings.Split(query, alfred.Separator))
+	parts := alfred.TrimAllLeft(strings.Split(arg, " "))
 	log.Printf("parts: %d", len(parts))
-
-	// TODO: get rid of this
-	prefix := ""
 
 	if len(parts) > 1 {
 		tag, found := findTagByName(parts[0])
 		if !found {
-			items = append(items, alfred.Item{Title: "Invalid tag '" + parts[0] + "'"})
+			items = append(items, &alfred.Item{Title: "Invalid tag '" + parts[0] + "'"})
 		}
 
-		prefix += tag.Name + alfred.Separator
 		subcommand := parts[1]
 
 		switch subcommand {
@@ -67,39 +50,36 @@ func (c TagFilter) Items(args []string) ([]alfred.Item, error) {
 			// list time entries with this tag
 			entries := getLatestTimeEntriesForTag(tag.Name)
 			if len(entries) == 0 {
-				items = append(items, alfred.Item{
-					Title:   "No time entries",
-					Invalid: true,
+				items = append(items, &alfred.Item{
+					Title: "No time entries",
 				})
 			} else {
 				for _, entry := range entries {
-					items = append(items, alfred.Item{
-						Title:   entry.Description,
-						Invalid: true,
+					items = append(items, &alfred.Item{
+						Title: entry.Description,
 					})
 				}
 			}
 
 		case "name":
 			name := tag.Name
-			arg := ""
+			// arg := ""
 			if len(parts) > 2 && parts[2] != "" {
 				name = parts[2]
 				updateTag := tag
 				updateTag.Name = name
-				dataString, _ := json.Marshal(updateTag)
-				arg = "update-tag " + string(dataString)
+				// dataString, _ := json.Marshal(updateTag)
+				// arg = "update-tag " + string(dataString)
 			}
-			items = append(items, alfred.Item{
+			items = append(items, &alfred.Item{
 				Title: "name: " + name,
-				Arg:   arg,
+				// Arg:   arg,
 			})
 		default:
 			if alfred.FuzzyMatches("name", subcommand) {
-				items = append(items, alfred.Item{
+				items = append(items, &alfred.Item{
 					Title:        "name: " + tag.Name,
-					Autocomplete: prefix + " name" + alfred.Separator + " ",
-					Invalid:      true,
+					Autocomplete: "name" + " ",
 				})
 			}
 			if alfred.FuzzyMatches("timers", subcommand) {
@@ -109,42 +89,40 @@ func (c TagFilter) Items(args []string) ([]alfred.Item, error) {
 				} else {
 					title += "<None>"
 				}
-				items = append(items, alfred.Item{
+				items = append(items, &alfred.Item{
 					Title:        title,
-					Autocomplete: prefix + " timers",
-					Invalid:      true,
+					Autocomplete: "timers",
 				})
 			}
 			if alfred.FuzzyMatches("delete", subcommand) {
-				data := deleteMessage{Type: "tag", ID: tag.Id}
-				dataString, _ := json.Marshal(data)
+				// data := deleteMessage{Type: "tag", ID: tag.ID}
+				// dataString, _ := json.Marshal(data)
 
-				items = append(items, alfred.Item{
+				items = append(items, &alfred.Item{
 					Title:        "delete",
-					Autocomplete: prefix + " delete",
-					Arg:          "delete " + string(dataString),
+					Autocomplete: "delete",
+					// Arg:          "delete " + string(dataString),
 				})
 			}
 		}
 	} else {
 		for _, entry := range cache.Account.Data.Tags {
-			if alfred.FuzzyMatches(entry.Name, query) {
-				items = append(items, alfred.Item{
+			if alfred.FuzzyMatches(entry.Name, arg) {
+				items = append(items, &alfred.Item{
 					Title:        entry.Name,
-					Autocomplete: prefix + entry.Name + alfred.Separator + " ",
-					Invalid:      true,
+					Autocomplete: entry.Name + " ",
 				})
 			}
 		}
 
 		if len(items) == 0 {
-			data := createTagMessage{Name: parts[0]}
-			dataString, _ := json.Marshal(data)
+			// data := createTagMessage{Name: parts[0]}
+			// dataString, _ := json.Marshal(data)
 
-			items = append(items, alfred.Item{
+			items = append(items, &alfred.Item{
 				Title:    parts[0],
 				Subtitle: "New tag",
-				Arg:      "create-tag " + string(dataString),
+				// Arg:      "create-tag " + string(dataString),
 			})
 		}
 	}
@@ -152,41 +130,37 @@ func (c TagFilter) Items(args []string) ([]alfred.Item, error) {
 	return items, nil
 }
 
-// update-tag --------------------------------------------
-
-// UpdateTagAction is a command
-type UpdateTagAction struct{}
-
-// Keyword returns the command's keyword
-func (c UpdateTagAction) Keyword() string {
-	return "update-tag"
-}
-
-// IsEnabled returns true if the command is enabled
-func (c UpdateTagAction) IsEnabled() bool {
-	return config.APIKey != ""
-}
-
 // Do runs the command
-func (c UpdateTagAction) Do(args []string) (string, error) {
-	var query string
-	if len(args) > 0 {
-		query = args[0]
-	}
+func (c TagCommand) Do(arg, data string) (out string, err error) {
+	var cfg tagCfg
 
-	log.Printf("update-tag %s", query)
-
-	var tag toggl.Tag
-	err := json.Unmarshal([]byte(query), &tag)
-	if err != nil {
-		return "", fmt.Errorf("Invalid time entry %v", query)
+	if data != "" {
+		if err := json.Unmarshal([]byte(data), &cfg); err != nil {
+			dlog.Printf("Error unmarshaling tag data: %v", err)
+		}
 	}
 
 	session := toggl.OpenSession(config.APIKey)
 
-	tag, err = session.UpdateTag(tag)
-	if err != nil {
-		return "", err
+	if cfg.ToUpdate != nil {
+		if _, err = session.UpdateTag(*cfg.ToUpdate); err != nil {
+			return
+		}
+	}
+
+	if cfg.ToCreate != nil {
+		var tag toggl.Tag
+		if cfg.ToCreate.WID == 0 {
+			cfg.ToCreate.WID = cache.Account.Data.Workspaces[0].ID
+		}
+		if tag, err = session.CreateTag(cfg.ToCreate.Name, cfg.ToCreate.WID); err == nil {
+			cache.Account.Data.Tags = append(cache.Account.Data.Tags, tag)
+			if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
+				log.Printf("Error saving cache: %s\n", err)
+			}
+		} else {
+			return
+		}
 	}
 
 	// Since tags are referenced by name, updating one can cause changes in
@@ -194,58 +168,15 @@ func (c UpdateTagAction) Do(args []string) (string, error) {
 	// refresh everything.
 	refresh()
 
-	return fmt.Sprintf("Updated '%s'", tag.Name), nil
+	return "Updated tag", nil
 }
 
-// create-tag --------------------------------------------
+// support -------------------------------------------------------------------
 
-type createTagMessage struct {
-	Name string
-	Wid  int
-}
-
-// CreateTagAction is a command
-type CreateTagAction struct{}
-
-// Keyword returns the command's keyword
-func (c CreateTagAction) Keyword() string {
-	return "create-tag"
-}
-
-// IsEnabled returns true if the command is enabled
-func (c CreateTagAction) IsEnabled() bool {
-	return config.APIKey != ""
-}
-
-// Do runs the command
-func (c CreateTagAction) Do(query string) (string, error) {
-	log.Printf("create-tag '%s'", query)
-
-	var data createTagMessage
-	err := json.Unmarshal([]byte(query), &data)
-	if err != nil {
-		return "", err
+type tagCfg struct {
+	ToCreate *struct {
+		Name string
+		WID  int
 	}
-
-	session := toggl.OpenSession(config.APIKey)
-	if err != nil {
-		return "", err
-	}
-
-	var tag toggl.Tag
-	if data.Wid == 0 {
-		data.Wid = cache.Account.Data.Workspaces[0].Id
-	}
-	tag, err = session.CreateTag(data.Name, data.Wid)
-
-	if err == nil {
-		log.Printf("Got tag: %#v\n", tag)
-		cache.Account.Data.Tags = append(cache.Account.Data.Tags, tag)
-		err := alfred.SaveJSON(cacheFile, &cache)
-		if err != nil {
-			log.Printf("Error saving cache: %s\n", err)
-		}
-	}
-
-	return fmt.Sprintf("Created tag '%s'", data.Name), err
+	ToUpdate *toggl.Tag
 }

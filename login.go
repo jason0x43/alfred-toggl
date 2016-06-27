@@ -23,8 +23,8 @@ func (c LoginCommand) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword(),
-		Arg:          "login",
-		Subtitle:     "Login to toggl.com",
+		// Arg:          "login",
+		Subtitle: "Login to toggl.com",
 	}
 }
 
@@ -61,7 +61,7 @@ func (c LoginCommand) Do(args []string) (out string, err error) {
 		return
 	}
 
-	config.APIKey = session.ApiToken
+	config.APIKey = session.APIToken
 	err = alfred.SaveJSON(configFile, &config)
 	if err != nil {
 		return

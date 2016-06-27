@@ -41,7 +41,7 @@ func (c ToggleAction) Do(args []string) (string, error) {
 
 	for i := 0; i < len(adata.TimeEntries); i++ {
 		entry := &adata.TimeEntries[i]
-		if entry.Id == id {
+		if entry.ID == id {
 			var err error
 			var operation string
 			var updatedEntry toggl.TimeEntry
@@ -55,7 +55,7 @@ func (c ToggleAction) Do(args []string) (string, error) {
 				operation = "Start"
 				updatedEntry, err = session.ContinueTimeEntry(*entry, config.DurationOnly)
 				log.Printf("Updated entry: %v", updatedEntry)
-				if updatedEntry.Id == entry.Id {
+				if updatedEntry.ID == entry.ID {
 					adata.TimeEntries[i] = updatedEntry
 				} else {
 					adata.TimeEntries = append(adata.TimeEntries, updatedEntry)
@@ -66,7 +66,7 @@ func (c ToggleAction) Do(args []string) (string, error) {
 				return "", err
 			}
 
-			if isRunning && running.Id != updatedEntry.Id {
+			if isRunning && running.ID != updatedEntry.ID {
 				// If a different timer was previously running, refresh everything
 				err = refresh()
 			} else {

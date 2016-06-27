@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -12,13 +13,14 @@ import (
 )
 
 var dlog = log.New(os.Stderr, "[toggl] ", log.LstdFlags)
+
 var cacheFile string
 var configFile string
 var config struct {
 	APIKey           string `desc:"Toggl API key"`
 	DurationOnly     bool   `desc:"Extend time entries instead of creating new ones."`
-	Rounding         int    `desc:"Minutes to round to, 0 to disable rounding." help:"%v minute increments"`
-	DefaultProjectID int    `desc:"Optional default project ID"`
+	Rounding         int    `desc:"Minutes to round to, 0 to disable rounding."`
+	DefaultProjectID int    `desc:"Optional default project ID; set to 0 to clear"`
 	TestMode         bool   `desc:"If true, disable auto refresh"`
 }
 var cache struct {
@@ -26,10 +28,15 @@ var cache struct {
 	Account   toggl.Account
 	Time      time.Time
 }
-var workflow alfred.Workflow
+var workflow *alfred.Workflow
 
 func main() {
 	var err error
+
+	if !alfred.IsDebugging() {
+		dlog.SetOutput(ioutil.Discard)
+		dlog.SetFlags(0)
+	}
 
 	workflow, err = alfred.OpenWorkflow(".", true)
 	if err != nil {
@@ -42,34 +49,29 @@ func main() {
 	configFile = path.Join(workflow.DataDir(), "config.json")
 	cacheFile = path.Join(workflow.CacheDir(), "cache.json")
 
-	dlog.Println("Using config file", configFile)
-	dlog.Println("Using cache file", cacheFile)
+	dlog.Printf("Using config file: %s", configFile)
+	dlog.Printf("Using cache file: %s", cacheFile)
 
 	err = alfred.LoadJSON(configFile, &config)
 	if err != nil {
 		dlog.Println("Error loading config:", err)
 	}
-	dlog.Println("loaded config:", config)
+	dlog.Printf("loaded config")
 
 	err = alfred.LoadJSON(cacheFile, &cache)
 	dlog.Println("loaded cache")
 
 	commands := []alfred.Command{
-		LoginCommand{},
-		TokenCommand{},
+		StatusFilter{},
+		// LoginCommand{},
+		// TokenCommand{},
 		TimeEntryCommand{},
 		ProjectCommand{},
-		TagFilter{},
+		TagCommand{},
 		ReportFilter{},
-		SyncFilter{},
 		OptionsCommand{},
-		LogoutCommand{},
-		ResetCommand{},
-		StartAction{},
-		UpdateTagAction{},
-		CreateTagAction{},
-		ToggleAction{},
-		DeleteAction{},
+		// LogoutCommand{},
+		// ResetCommand{},
 	}
 
 	workflow.Run(commands)

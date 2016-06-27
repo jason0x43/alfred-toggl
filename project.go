@@ -2,9 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
-	"strconv"
 
 	"github.com/jason0x43/go-alfred"
 	"github.com/jason0x43/go-toggl"
@@ -13,9 +11,13 @@ import (
 // ProjectCommand is a command for handling projects
 type ProjectCommand struct{}
 
-// Keyword returns the command's keyword
-func (c ProjectCommand) Keyword() string {
-	return "projects"
+// About returns information about a command
+func (c ProjectCommand) About() *alfred.CommandDef {
+	return &alfred.CommandDef{
+		Keyword:     "projects",
+		Description: "List your projects, add new ones",
+		WithSpace:   true,
+	}
 }
 
 // IsEnabled returns true if the command is enabled
@@ -23,44 +25,50 @@ func (c ProjectCommand) IsEnabled() bool {
 	return config.APIKey != ""
 }
 
-// MenuItem returns the command's menu item
-func (c ProjectCommand) MenuItem() alfred.Item {
-	return alfred.NewKeywordItem(c.Keyword(), "List your projects, add new ones")
-}
-
 // Items returns a list of filter items
-func (c ProjectCommand) Items(args []string) (items []alfred.Item, err error) {
+func (c ProjectCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 	if err = checkRefresh(); err != nil {
 		return
 	}
 
-	var projectID int
+	var cfg projectCfg
 
-	flags := flag.NewFlagSet("projectFlags", flag.ContinueOnError)
-	flags.IntVar(&projectID, "project", -1, "Project ID")
-	flags.Parse(args)
+	if data != "" {
+		if err = json.Unmarshal([]byte(data), &cfg); err != nil {
+			dlog.Printf("Error unmarshalling projects var: %v", err)
+		}
+	}
 
-	query := flags.Arg(0)
-	dlog.Printf("query: %s", query)
+	pid := -1
+	if cfg.Project != nil {
+		pid = *cfg.Project
+	}
 
 	runningTimer, isRunning := getRunningTimer()
 
-	if projectID != -1 {
+	if pid != -1 {
 		// List menu for a project
-		if project, ok := findProjectByID(projectID); ok {
-			return projectItems(project, query)
+		if project, _, ok := getProjectByID(pid); ok {
+			return projectItems(project, arg)
 		}
 	} else {
+		projectCfg := projectCfg{}
+
 		for _, entry := range cache.Account.Data.Projects {
-			if alfred.FuzzyMatches(entry.Name, query) {
-				item := alfred.Item{
+			if alfred.FuzzyMatches(entry.Name, arg) {
+				projectCfg.Project = &entry.ID
+
+				item := &alfred.Item{
 					Title:        entry.Name,
 					Subtitle:     "",
 					Autocomplete: entry.Name,
-					Arg:          fmt.Sprintf("%d", entry.Id),
+					Arg: &alfred.ItemArg{
+						Keyword: "projects",
+						Data:    alfred.Stringify(projectCfg),
+					},
 				}
 
-				if isRunning && runningTimer.Pid == entry.Id {
+				if isRunning && runningTimer.Pid == entry.ID {
 					item.Icon = "running.png"
 				}
 
@@ -68,21 +76,24 @@ func (c ProjectCommand) Items(args []string) (items []alfred.Item, err error) {
 			}
 		}
 
-		if len(items) == 0 && query != "" {
-			data := createProjectMessage{Name: query}
-			dataString, _ := json.Marshal(data)
+		if len(items) == 0 && arg != "" {
+			projectCfg.ToCreate = &createProjectMessage{Name: arg}
 
-			items = append(items, alfred.Item{
-				Title:    query,
+			items = append(items, &alfred.Item{
+				Title:    arg,
 				Subtitle: "New project",
-				Arg:      "-create " + strconv.Quote(string(dataString)),
+				Arg: &alfred.ItemArg{
+					Keyword: "projects",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(projectCfg),
+				},
 			})
-		} else if query != "" {
-			items = alfred.SortItemsForKeyword(items, query)
+		} else if arg != "" {
+			// items = alfred.SortItemsForKeyword(items, arg)
 		}
 
 		if len(items) == 0 {
-			items = append(items, alfred.Item{Title: "No matching projects"})
+			items = append(items, &alfred.Item{Title: "No matching projects"})
 		}
 	}
 
@@ -90,36 +101,37 @@ func (c ProjectCommand) Items(args []string) (items []alfred.Item, err error) {
 }
 
 // Do runs the command
-func (c ProjectCommand) Do(args []string) (out string, err error) {
-	var defaultID int
-	var toCreate string
-	var toUpdate string
+func (c ProjectCommand) Do(arg, data string) (out string, err error) {
+	var cfg projectCfg
 
-	flags := flag.NewFlagSet("projectFlags", flag.ContinueOnError)
-	flags.IntVar(&defaultID, "default", -1, "Project ID to set as default")
-	flags.StringVar(&toCreate, "create", "", "New project data")
-	flags.StringVar(&toUpdate, "update", "", "Updated project data")
-	flags.Parse(args)
-
-	if defaultID != -1 {
-		dlog.Printf("setting default project to %v", defaultID)
-		config.DefaultProjectID = defaultID
-		alfred.SaveJSON(configFile, &config)
+	if data != "" {
+		if err := json.Unmarshal([]byte(data), &cfg); err != nil {
+			dlog.Printf("Error unmarshaling project data: %v", err)
+		}
 	}
 
-	if toCreate != "" {
-		dlog.Printf("creating project %v", toCreate)
+	if cfg.Default != nil {
+		dlog.Printf("setting default project to %v", cfg.Default)
+		config.DefaultProjectID = *cfg.Default
+		if err := alfred.SaveJSON(configFile, &config); err != nil {
+			return "Error saving config", err
+		}
+		return fmt.Sprintf(`Set default project to %d`, cfg.Default), nil
+	}
+
+	if cfg.ToCreate != nil {
+		dlog.Printf("creating project %v", cfg.ToCreate)
 		var project toggl.Project
-		if project, err = createProject(toCreate); err != nil {
+		if project, err = createProject(cfg.ToCreate); err != nil {
 			return
 		}
 		return fmt.Sprintf(`Created project "%s"`, project.Name), nil
 	}
 
-	if toUpdate != "" {
-		dlog.Printf("updating project %v", toUpdate)
+	if cfg.ToUpdate != nil {
+		dlog.Printf("updating project %v", cfg.ToUpdate)
 		var project toggl.Project
-		if project, err = updateProject(toUpdate); err != nil {
+		if project, err = updateProject(cfg.ToUpdate); err != nil {
 			return
 		}
 		return fmt.Sprintf(`Updated project "%s"`, project.Name), nil
@@ -130,25 +142,26 @@ func (c ProjectCommand) Do(args []string) (out string, err error) {
 
 // support -------------------------------------------------------------------
 
+type projectCfg struct {
+	Project  *int                  `json:"project,omitempty"`
+	Default  *int                  `json:"default,omitempty"`
+	ToCreate *createProjectMessage `json:"create,omitempty"`
+	ToUpdate *toggl.Project        `json:"update,omitempty"`
+}
+
 type createProjectMessage struct {
 	Name string
 	WID  int
 }
 
-func createProject(dataString string) (project toggl.Project, err error) {
-	var message createProjectMessage
-	if err = json.Unmarshal([]byte(dataString), &message); err != nil {
-		return
-	}
-
+func createProject(msg *createProjectMessage) (project toggl.Project, err error) {
 	session := toggl.OpenSession(config.APIKey)
 
-	if message.WID == 0 {
-		message.WID = cache.Account.Data.Workspaces[0].Id
+	if msg.WID == 0 {
+		msg.WID = cache.Account.Data.Workspaces[0].ID
 	}
 
-	if project, err = session.CreateProject(message.Name, message.WID); err == nil {
-		dlog.Printf("Got project: %#v\n", project)
+	if project, err = session.CreateProject(msg.Name, msg.WID); err == nil {
 		cache.Account.Data.Projects = append(cache.Account.Data.Projects, project)
 		if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
 			dlog.Printf("Error saving cache: %s\n", err)
@@ -158,21 +171,17 @@ func createProject(dataString string) (project toggl.Project, err error) {
 	return
 }
 
-func updateProject(dataString string) (project toggl.Project, err error) {
-	if err = json.Unmarshal([]byte(dataString), &project); err != nil {
-		return
-	}
-
+func updateProject(p *toggl.Project) (project toggl.Project, err error) {
 	session := toggl.OpenSession(config.APIKey)
 
-	if project, err = session.UpdateProject(project); err != nil {
+	if project, err = session.UpdateProject(*p); err != nil {
 		return
 	}
 
 	adata := &cache.Account.Data
 
 	for i, p := range adata.Projects {
-		if p.Id == project.Id {
+		if p.ID == project.ID {
 			adata.Projects[i] = project
 			if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
 				dlog.Printf("Error saving cache: %v\n", err)
@@ -184,45 +193,55 @@ func updateProject(dataString string) (project toggl.Project, err error) {
 	return
 }
 
-func projectItems(project toggl.Project, query string) (items []alfred.Item, err error) {
-	if alfred.PartiallyPrefixes("name:", query) {
-		item := alfred.Item{}
-		parts := alfred.CleanSplitN(query, " ", 2)
+func projectItems(project toggl.Project, arg string) (items []*alfred.Item, err error) {
+	if alfred.FuzzyMatches("name:", arg) {
+		item := &alfred.Item{}
+		_, name := alfred.SplitCmd(arg)
 
-		if len(parts) > 1 {
-			newName := parts[1]
+		if name != "" {
 			updateEntry := project
-			updateEntry.Name = newName
-			dataString, _ := json.Marshal(updateEntry)
-			item.Title = fmt.Sprintf("Change name to '%s'", newName)
+			updateEntry.Name = name
+			item.Title = fmt.Sprintf("Change name to '%s'", name)
 			item.Subtitle = "Name: " + project.Name
-			item.Arg = "-update " + strconv.Quote(string(dataString))
+			item.Arg = &alfred.ItemArg{
+				Keyword: "projects",
+				Data:    alfred.Stringify(projectCfg{ToUpdate: &updateEntry}),
+			}
+
 		} else {
 			item.Title = "Name: " + project.Name
 			item.Autocomplete = "Name: "
-			item.Invalid = true
 		}
-
-		dlog.Printf("name item: %#v", item)
 
 		items = append(items, item)
 	}
 
-	if alfred.PartiallyPrefixes("Make default", query) {
-		items = append(items, alfred.Item{
-			Title:        "Make default",
-			Subtitle:     "Make this the default project",
-			Autocomplete: "Make default",
-			Arg:          fmt.Sprintf("-default=%d", project.Id),
-		})
+	if project.ID != config.DefaultProjectID {
+		if alfred.FuzzyMatches("Make default", arg) {
+			c := config
+			c.DefaultProjectID = project.ID
+			items = append(items, &alfred.Item{
+				Title:        "Make default",
+				Subtitle:     "Make this the default project",
+				Autocomplete: "Make default",
+				Arg: &alfred.ItemArg{
+					Keyword: "options",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(c),
+				},
+			})
+		}
 	}
 
-	if alfred.PartiallyPrefixes("timers", query) {
-		items = append(items, alfred.Item{
+	if alfred.FuzzyMatches("timers", arg) {
+		items = append(items, &alfred.Item{
 			Title:        "Timers...",
 			Subtitle:     "List associated time entries",
 			Autocomplete: "Timers...",
-			Arg:          "-timers",
+			Arg: &alfred.ItemArg{
+				Keyword: "timers",
+				Data:    alfred.Stringify(timerCfg{Project: &project.ID}),
+			},
 		})
 	}
 

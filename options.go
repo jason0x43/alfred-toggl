@@ -13,9 +13,15 @@ import (
 // OptionsCommand is a command
 type OptionsCommand struct{}
 
-// Keyword returns the command's keyword
-func (c OptionsCommand) Keyword() string {
-	return "options"
+var optionsDef = alfred.CommandDef{
+	Keyword:     "options",
+	Description: "Sets options",
+	WithSpace:   true,
+}
+
+// About returns information about a command
+func (c OptionsCommand) About() *alfred.CommandDef {
+	return &optionsDef
 }
 
 // IsEnabled returns true if the command is enabled
@@ -23,24 +29,10 @@ func (c OptionsCommand) IsEnabled() bool {
 	return config.APIKey != ""
 }
 
-// MenuItem returns the command's menu item
-func (c OptionsCommand) MenuItem() alfred.Item {
-	return alfred.NewKeywordItem(c.Keyword(), "Set options")
-}
-
 // Items returns a list of filter items
-func (c OptionsCommand) Items(args []string) (items []alfred.Item, err error) {
+func (c OptionsCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 	ct := reflect.TypeOf(config)
 	cfg := reflect.Indirect(reflect.ValueOf(config))
-
-	var query string
-	if len(args) > 0 {
-		query = args[0]
-	}
-
-	prefix := c.Keyword() + " "
-
-	dlog.Printf("options args: %#v", args)
 
 	for i := 0; i < ct.NumField(); i++ {
 		field := ct.Field(i)
@@ -49,82 +41,81 @@ func (c OptionsCommand) Items(args []string) (items []alfred.Item, err error) {
 			continue
 		}
 
-		parts := alfred.CleanSplitN(query, " ", 2)
-		if !alfred.FuzzyMatches(field.Name, parts[0]) {
+		name, value := alfred.SplitCmd(arg)
+		if !alfred.FuzzyMatches(field.Name, name) {
 			continue
 		}
 
-		item := alfred.Item{
+		item := &alfred.Item{
 			Title:        field.Name + ": ",
 			Subtitle:     desc,
-			Autocomplete: prefix + field.Name + " ",
+			Autocomplete: field.Name,
+			Arg: &alfred.ItemArg{
+				Keyword: "options",
+				Mode:    alfred.ModeDo,
+			},
 		}
 
-		if field.Type.Name() == "bool" {
+		switch field.Type.Name() {
+		case "bool":
 			f := cfg.FieldByName(field.Name)
 			item.Title += fmt.Sprintf("%v", f.Bool())
+			if name == field.Name {
+				item.Title += " (press Enter to toggle)"
+			}
 
 			// copy the current options, update them, and use as the arg
 			opts := config
 			o := reflect.Indirect(reflect.ValueOf(&opts))
 			newVal := !f.Bool()
 			o.FieldByName(field.Name).SetBool(newVal)
-			dataString, _ := json.Marshal(opts)
-			item.Arg = "options " + string(dataString)
-		} else if field.Type.Name() == "int" {
-			if len(parts) > 1 && parts[1] != "" {
-				help := field.Tag.Get("help")
-				log.Printf("help: %s", help)
-				val, err := strconv.Atoi(parts[1])
+			item.Arg.Data = alfred.Stringify(opts)
+		case "int":
+			item.Autocomplete += " "
+
+			if value != "" {
+				val, err := strconv.Atoi(value)
 				if err != nil {
 					return items, err
 				}
-				item.Title += fmt.Sprintf(help, val)
+				item.Title += fmt.Sprintf("%d", val)
 
 				// copy the current options, update them, and use as the arg
 				opts := config
 				o := reflect.Indirect(reflect.ValueOf(&opts))
 				o.FieldByName(field.Name).SetInt(int64(val))
-				dataString, _ := json.Marshal(opts)
-				item.Arg = "options " + string(dataString)
+				item.Arg.Data = alfred.Stringify(opts)
 			} else {
 				f := cfg.FieldByName(field.Name)
-				// copy the current options, update them, and use as the arg
 				val := f.Int()
-				if val == 0 {
-					item.Title += "Not rounding"
-				} else {
-					item.Title += fmt.Sprintf("%d minute increments", val)
+				item.Title += fmt.Sprintf("%v", val)
+				if name == field.Name {
+					item.Title += " (type a new value to change)"
 				}
-
-				item.Invalid = true
 			}
+		case "string":
+			f := cfg.FieldByName(field.Name)
+			item.Autocomplete += " "
+			item.Title += f.String()
 		}
 
 		items = append(items, item)
 	}
-	items = alfred.SortItemsForKeyword(items, query)
 	return
 }
 
 // Do runs the command
-func (c OptionsCommand) Do(args []string) (string, error) {
-	var query string
-	if len(args) > 0 {
-		query = args[0]
+func (c OptionsCommand) Do(arg, data string) (out string, err error) {
+	log.Printf("options '%s'", arg)
+
+	if err = json.Unmarshal([]byte(data), &config); err != nil {
+		return
 	}
 
-	log.Printf("options '%s'", query)
-
-	err := json.Unmarshal([]byte(query), &config)
-	if err != nil {
-		return "", err
-	}
-
-	err = alfred.SaveJSON(configFile, &config)
-	if err != nil {
+	if err = alfred.SaveJSON(configFile, &config); err != nil {
 		log.Printf("Error saving config: %s\n", err)
+		return "Error updating options", err
 	}
 
-	return "", err
+	return "Updated options", err
 }

@@ -8,50 +8,11 @@
 	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
-		<key>10D6B957-EA9B-4F7F-8C96-C57386CD5553</key>
+		<key>2A0B6604-951B-4A30-920A-6841052B0C2E</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>0647B0B4-6734-48A1-BF61-031D41D2A35D</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>16BA0990-1720-4770-9409-6E96EB9D933C</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>31A515F5-2090-4FA5-AA04-B116A1FCF2E5</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>2B57572F-0FA7-427D-8CCD-4ACE3EC069B8</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>AA322223-330A-4792-B59F-5626F7AAF18F</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>2C96E5D9-9174-4CB3-BE51-399204654FDE</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>F8F9873A-B6C0-4461-A863-BB69B40345ED</string>
+				<string>369C8FF2-141E-4607-ADEB-060B5F8540AF</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -60,11 +21,11 @@
 				<true/>
 			</dict>
 		</array>
-		<key>31A515F5-2090-4FA5-AA04-B116A1FCF2E5</key>
+		<key>2F84AF01-C03E-4208-BF3C-8C164102972F</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>F211A72C-F69E-4E2B-9E8C-39E8F7965B04</string>
+				<string>369C8FF2-141E-4607-ADEB-060B5F8540AF</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -73,11 +34,11 @@
 				<true/>
 			</dict>
 		</array>
-		<key>4595D6C6-C989-4758-ACFA-D29A665EC646</key>
+		<key>369C8FF2-141E-4607-ADEB-060B5F8540AF</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>C73B03A5-DC59-4BEF-8A72-162CD6A80404</string>
+				<string>A23E58BB-61D4-4102-951A-7A3996F073BA</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -86,11 +47,11 @@
 				<false/>
 			</dict>
 		</array>
-		<key>53F8D382-0B54-46E0-AAC1-661AF0E3BB1A</key>
+		<key>46DCEE50-978C-407D-8649-2F8348C58809</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>10D6B957-EA9B-4F7F-8C96-C57386CD5553</string>
+				<string>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -99,11 +60,24 @@
 				<false/>
 			</dict>
 		</array>
-		<key>5A12FA50-8214-4F9A-B1D7-028CEEA90333</key>
+		<key>A23E58BB-61D4-4102-951A-7A3996F073BA</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>2B57572F-0FA7-427D-8CCD-4ACE3EC069B8</string>
+				<string>6C0DF82C-C85F-4855-8728-F3ADC38BB920</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>B1B15BD6-663A-4B2B-B5D7-5EC7CEF816F1</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>369C8FF2-141E-4607-ADEB-060B5F8540AF</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -112,99 +86,11 @@
 				<true/>
 			</dict>
 		</array>
-		<key>6D0590A3-2AC9-449C-9D27-6BD80BDF8949</key>
+		<key>B2511D88-9AF6-4ABE-BEA0-C4F8FE207C12</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>EB5731EA-0D3B-4BAC-970A-8DE6AB8A5D29</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>6FFB97A4-4163-49B0-8CC5-CCCB9B53C8CA</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>4595D6C6-C989-4758-ACFA-D29A665EC646</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>7D608320-88D8-4E7F-8974-F5FA16396003</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>2C96E5D9-9174-4CB3-BE51-399204654FDE</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>81D0FEBA-D167-4237-89F2-96F3AE42BD20</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>31A515F5-2090-4FA5-AA04-B116A1FCF2E5</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>A06B1937-B199-44DF-A70D-4C1404D4FC55</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>81D0FEBA-D167-4237-89F2-96F3AE42BD20</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>B7FFA1F0-055A-4273-8373-47FBD06361EE</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>53F8D382-0B54-46E0-AAC1-661AF0E3BB1A</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>BCCA5045-3989-451C-84B8-2C9CE4CC29D9</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>6D0590A3-2AC9-449C-9D27-6BD80BDF8949</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>A06B1937-B199-44DF-A70D-4C1404D4FC55</string>
+				<string>369C8FF2-141E-4607-ADEB-060B5F8540AF</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -213,11 +99,11 @@
 				<true/>
 			</dict>
 		</array>
-		<key>C191860C-C6AD-485F-8778-7C9AEF087EA6</key>
+		<key>B5C43E68-5279-4D1A-8D66-C00C74CF5291</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>CBE4F6C5-08B3-4CC7-ACA4-04B885C16215</string>
+				<string>369C8FF2-141E-4607-ADEB-060B5F8540AF</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -226,135 +112,17 @@
 				<true/>
 			</dict>
 		</array>
-		<key>CA67F1D0-10D8-485D-9FAB-8A55BD5C78CA</key>
+		<key>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>0647B0B4-6734-48A1-BF61-031D41D2A35D</string>
+				<string>369C8FF2-141E-4607-ADEB-060B5F8540AF</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
 				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>CBE4F6C5-08B3-4CC7-ACA4-04B885C16215</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>7D608320-88D8-4E7F-8974-F5FA16396003</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>16BA0990-1720-4770-9409-6E96EB9D933C</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>6FFB97A4-4163-49B0-8CC5-CCCB9B53C8CA</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>B7FFA1F0-055A-4273-8373-47FBD06361EE</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>F2A33763-35C4-450B-981E-FDFBD56B8CFD</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>DF923826-7D8A-479E-890C-3229C25E50C7</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>CA67F1D0-10D8-485D-9FAB-8A55BD5C78CA</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>EB5731EA-0D3B-4BAC-970A-8DE6AB8A5D29</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>0647B0B4-6734-48A1-BF61-031D41D2A35D</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>F211A72C-F69E-4E2B-9E8C-39E8F7965B04</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>DF923826-7D8A-479E-890C-3229C25E50C7</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>F2A33763-35C4-450B-981E-FDFBD56B8CFD</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>5A12FA50-8214-4F9A-B1D7-028CEEA90333</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>F8F9873A-B6C0-4461-A863-BB69B40345ED</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>BCCA5045-3989-451C-84B8-2C9CE4CC29D9</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
+				<true/>
 			</dict>
 		</array>
 	</dict>
@@ -376,29 +144,29 @@
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>escaping</key>
-				<integer>102</integer>
+				<integer>4</integer>
 				<key>keyword</key>
-				<string>tgp</string>
+				<string>tgl</string>
 				<key>queuedelaycustom</key>
-				<integer>3</integer>
+				<integer>1</integer>
 				<key>queuedelayimmediatelyinitially</key>
-				<true/>
+				<false/>
 				<key>queuedelaymode</key>
 				<integer>0</integer>
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Talking to Toggl...</string>
+				<string>Refreshing data...</string>
 				<key>script</key>
-				<string>./alfred-toggl tell projects "$1"</string>
+				<string>./alfred-toggl "$1" "$data"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>Projects</string>
+				<string>Interact with Toggl</string>
 				<key>title</key>
-				<string>projects</string>
+				<string>tgl</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -407,164 +175,20 @@
 			<key>type</key>
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
-			<string>2C96E5D9-9174-4CB3-BE51-399204654FDE</string>
+			<string>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</string>
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string></string>
-				<key>script</key>
-				<string>./alfred-toggl tell projects -project=$project "$1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string></string>
-				<key>title</key>
-				<string></string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
+				<key>triggerid</key>
+				<string>toggl</string>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
+			<string>alfred.workflow.trigger.external</string>
 			<key>uid</key>
-			<string>BCCA5045-3989-451C-84B8-2C9CE4CC29D9</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>eval "./alfred-toggl do projects $1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>EB5731EA-0D3B-4BAC-970A-8DE6AB8A5D29</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>inputstring</key>
-				<string>{query}</string>
-				<key>matchcasesensitive</key>
-				<false/>
-				<key>matchmode</key>
-				<integer>2</integer>
-				<key>matchstring</key>
-				<string>^-(update|create)\s</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.filter</string>
-			<key>uid</key>
-			<string>6D0590A3-2AC9-449C-9D27-6BD80BDF8949</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>inputstring</key>
-				<string>{var:item}</string>
-				<key>matchcasesensitive</key>
-				<false/>
-				<key>matchmode</key>
-				<integer>0</integer>
-				<key>matchstring</key>
-				<string>projects</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.filter</string>
-			<key>uid</key>
-			<string>7D608320-88D8-4E7F-8974-F5FA16396003</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>project</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>F8F9873A-B6C0-4461-A863-BB69B40345ED</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>inputstring</key>
-				<string>{query}</string>
-				<key>matchcasesensitive</key>
-				<true/>
-				<key>matchmode</key>
-				<integer>0</integer>
-				<key>matchstring</key>
-				<string>-timers</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.filter</string>
-			<key>uid</key>
-			<string>A06B1937-B199-44DF-A70D-4C1404D4FC55</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>output</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>81D0FEBA-D167-4237-89F2-96F3AE42BD20</string>
+			<string>46DCEE50-978C-407D-8649-2F8348C58809</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -578,7 +202,7 @@
 				<key>escaping</key>
 				<integer>4</integer>
 				<key>keyword</key>
-				<string>tgl</string>
+				<string>tgp</string>
 				<key>queuedelaycustom</key>
 				<integer>1</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -588,17 +212,17 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Talking to Toggl...</string>
+				<string>Refreshing data...</string>
 				<key>script</key>
-				<string>./alfred-toggl tell "$1"</string>
+				<string>./alfred-toggl "$1" "{\"keyword\":\"projects\"}"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>Track your time</string>
+				<string>List and modify projects</string>
 				<key>title</key>
-				<string>tgl</string>
+				<string>tgp</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -607,7 +231,87 @@
 			<key>type</key>
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
-			<string>C191860C-C6AD-485F-8778-7C9AEF087EA6</string>
+			<string>2A0B6604-951B-4A30-920A-6841052B0C2E</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>json</key>
+				<string>{
+  "alfredworkflow" : {
+    "arg" : "{query}",
+    "config" : {
+      "keyword" : "tgl",
+      "scriptargtype" : 1,
+      "escaping" : 4,
+      "queuedelayimmediatelyinitially" : false,
+      "argumenttype" : 1,
+      "queuedelaymode" : 0,
+      "type" : 0,
+      "script" : ".\/alfred-toggl \"$1\" \"$data\"",
+      "title" : "tgl",
+      "runningsubtext" : "Refreshing data...",
+      "queuemode" : 1,
+      "subtext" : "Interact with Toggl",
+      "scriptfile" : "",
+      "alfredfiltersresults" : false,
+      "queuedelaycustom" : 1,
+      "withspace" : true
+    },
+    "variables" : {
+    }
+  }
+}</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.json</string>
+			<key>uid</key>
+			<string>B3D062C1-6A26-4CDB-BEB8-900B1B1E373D</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>4</integer>
+				<key>keyword</key>
+				<string>tgt</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Refreshing data...</string>
+				<key>script</key>
+				<string>./alfred-toggl "$1" "{\"keyword\":\"timers\"}"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>List and modify time entries</string>
+				<key>title</key>
+				<string>tgt</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>2F84AF01-C03E-4208-BF3C-8C164102972F</string>
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
@@ -628,105 +332,9 @@
 			<key>type</key>
 			<string>alfred.workflow.output.notification</string>
 			<key>uid</key>
-			<string>0647B0B4-6734-48A1-BF61-031D41D2A35D</string>
+			<string>6C0DF82C-C85F-4855-8728-F3ADC38BB920</string>
 			<key>version</key>
 			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>keyword</key>
-				<string>tgt</string>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string>Talking to Toggl...</string>
-				<key>script</key>
-				<string>if [[ -n $project ]]; then
-    project="-project=$project"
-fi
-
-./alfred-toggl tell timers $project "$1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string>Timers</string>
-				<key>title</key>
-				<string>timers</string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>31A515F5-2090-4FA5-AA04-B116A1FCF2E5</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string></string>
-				<key>script</key>
-				<string>if [[ -n $project ]]; then
-    project="-project=$project"
-fi
-
-if [[ -n $timer ]]; then
-	timer="-timer=$timer"
-fi
-
-./alfred-toggl tell timers $project $timer "$1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string></string>
-				<key>title</key>
-				<string></string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>DF923826-7D8A-479E-890C-3229C25E50C7</string>
-			<key>version</key>
-			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -736,73 +344,26 @@ fi
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>eval "./alfred-toggl do timers $1"</string>
+				<string>./alfred-toggl -final "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string></string>
+				<string>./alfred-toggl -final "$1"</string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>CA67F1D0-10D8-485D-9FAB-8A55BD5C78CA</string>
+			<string>A23E58BB-61D4-4102-951A-7A3996F073BA</string>
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
 		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>item</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
 			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
+			<string>alfred.workflow.utility.junction</string>
 			<key>uid</key>
-			<string>CBE4F6C5-08B3-4CC7-ACA4-04B885C16215</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>inputstring</key>
-				<string>{var:item}</string>
-				<key>matchcasesensitive</key>
-				<false/>
-				<key>matchmode</key>
-				<integer>0</integer>
-				<key>matchstring</key>
-				<string>timers</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.filter</string>
-			<key>uid</key>
-			<string>16BA0990-1720-4770-9409-6E96EB9D933C</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>timer</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>F211A72C-F69E-4E2B-9E8C-39E8F7965B04</string>
+			<string>369C8FF2-141E-4607-ADEB-060B5F8540AF</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -814,21 +375,107 @@ fi
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>escaping</key>
-				<integer>102</integer>
+				<integer>4</integer>
 				<key>keyword</key>
-				<string>tgo</string>
+				<string>tgr</string>
 				<key>queuedelaycustom</key>
-				<integer>3</integer>
+				<integer>1</integer>
 				<key>queuedelayimmediatelyinitially</key>
-				<true/>
+				<false/>
 				<key>queuedelaymode</key>
 				<integer>0</integer>
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Talking to Toggl...</string>
+				<string>Refreshing data...</string>
 				<key>script</key>
-				<string>./alfred-toggl tell options "$1"</string>
+				<string>./alfred-toggl "$1" "{\"keyword\":\"report\"}"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Show summary reports</string>
+				<key>title</key>
+				<string>tgr</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>B2511D88-9AF6-4ABE-BEA0-C4F8FE207C12</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>escaping</key>
+				<integer>4</integer>
+				<key>keyword</key>
+				<string>tgs</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Syncing with toggl.com...</string>
+				<key>script</key>
+				<string>./alfred-toggl "$1" "{\"keyword\":\"status\"}"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Return current status</string>
+				<key>title</key>
+				<string>tgs</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>B5C43E68-5279-4D1A-8D66-C00C74CF5291</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>4</integer>
+				<key>keyword</key>
+				<string>tgo</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Syncing...</string>
+				<key>script</key>
+				<string>./alfred-toggl "$1" "{\"keyword\":\"options\"}"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -836,7 +483,7 @@ fi
 				<key>subtext</key>
 				<string>Options</string>
 				<key>title</key>
-				<string>options</string>
+				<string>tgo</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -845,257 +492,9 @@ fi
 			<key>type</key>
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
-			<string>4595D6C6-C989-4758-ACFA-D29A665EC646</string>
+			<string>B1B15BD6-663A-4B2B-B5D7-5EC7CEF816F1</string>
 			<key>version</key>
 			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>eval "./alfred-toggl do options $1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>C73B03A5-DC59-4BEF-8A72-162CD6A80404</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>inputstring</key>
-				<string>{var:item}</string>
-				<key>matchcasesensitive</key>
-				<false/>
-				<key>matchmode</key>
-				<integer>0</integer>
-				<key>matchstring</key>
-				<string>options</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.filter</string>
-			<key>uid</key>
-			<string>6FFB97A4-4163-49B0-8CC5-CCCB9B53C8CA</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>eval "./alfred-toggl do tags $1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>10D6B957-EA9B-4F7F-8C96-C57386CD5553</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>keyword</key>
-				<string>tgg</string>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string>Talking to Toggl...</string>
-				<key>script</key>
-				<string>./alfred-toggl tell tags "$1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string>Tags</string>
-				<key>title</key>
-				<string>tags</string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>53F8D382-0B54-46E0-AAC1-661AF0E3BB1A</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>inputstring</key>
-				<string>{var:item}</string>
-				<key>matchcasesensitive</key>
-				<false/>
-				<key>matchmode</key>
-				<integer>0</integer>
-				<key>matchstring</key>
-				<string>tags</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.filter</string>
-			<key>uid</key>
-			<string>B7FFA1F0-055A-4273-8373-47FBD06361EE</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>keyword</key>
-				<string>tgr</string>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string>Talking to Toggl...</string>
-				<key>script</key>
-				<string>./alfred-toggl tell report "$1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string>Report</string>
-				<key>title</key>
-				<string>report</string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>5A12FA50-8214-4F9A-B1D7-028CEEA90333</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string></string>
-				<key>script</key>
-				<string>eval "./alfred-toggl tell report $output \"$1\""</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string></string>
-				<key>title</key>
-				<string></string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>AA322223-330A-4792-B59F-5626F7AAF18F</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>inputstring</key>
-				<string>{var:item}</string>
-				<key>matchcasesensitive</key>
-				<false/>
-				<key>matchmode</key>
-				<integer>0</integer>
-				<key>matchstring</key>
-				<string>tags</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.filter</string>
-			<key>uid</key>
-			<string>F2A33763-35C4-450B-981E-FDFBD56B8CFD</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>output</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>2B57572F-0FA7-427D-8CCD-4ACE3EC069B8</string>
-			<key>version</key>
-			<integer>1</integer>
 		</dict>
 	</array>
 	<key>readme</key>
@@ -1104,201 +503,84 @@ fi
 This workflow allows the user to interact with the Toggl time tracking service. It can be used to create timers and projects; start, stop, and adjust timers; and generate reports for recent timespans.</string>
 	<key>uidata</key>
 	<dict>
-		<key>0647B0B4-6734-48A1-BF61-031D41D2A35D</key>
+		<key>2A0B6604-951B-4A30-920A-6841052B0C2E</key>
 		<dict>
 			<key>xpos</key>
-			<integer>1530</integer>
+			<integer>360</integer>
 			<key>ypos</key>
 			<integer>170</integer>
 		</dict>
-		<key>10D6B957-EA9B-4F7F-8C96-C57386CD5553</key>
+		<key>2F84AF01-C03E-4208-BF3C-8C164102972F</key>
 		<dict>
-			<key>note</key>
-			<string>Update tag</string>
 			<key>xpos</key>
-			<integer>1280</integer>
+			<integer>360</integer>
 			<key>ypos</key>
-			<integer>450</integer>
+			<integer>290</integer>
 		</dict>
-		<key>16BA0990-1720-4770-9409-6E96EB9D933C</key>
+		<key>369C8FF2-141E-4607-ADEB-060B5F8540AF</key>
 		<dict>
 			<key>xpos</key>
-			<integer>310</integer>
+			<integer>660</integer>
 			<key>ypos</key>
-			<integer>200</integer>
-		</dict>
-		<key>2B57572F-0FA7-427D-8CCD-4ACE3EC069B8</key>
-		<dict>
-			<key>xpos</key>
-			<integer>520</integer>
-			<key>ypos</key>
-			<integer>620</integer>
-		</dict>
-		<key>2C96E5D9-9174-4CB3-BE51-399204654FDE</key>
-		<dict>
-			<key>xpos</key>
 			<integer>370</integer>
-			<key>ypos</key>
-			<integer>30</integer>
 		</dict>
-		<key>31A515F5-2090-4FA5-AA04-B116A1FCF2E5</key>
+		<key>46DCEE50-978C-407D-8649-2F8348C58809</key>
 		<dict>
 			<key>xpos</key>
-			<integer>890</integer>
+			<integer>80</integer>
 			<key>ypos</key>
-			<integer>170</integer>
+			<integer>50</integer>
 		</dict>
-		<key>4595D6C6-C989-4758-ACFA-D29A665EC646</key>
+		<key>6C0DF82C-C85F-4855-8728-F3ADC38BB920</key>
 		<dict>
 			<key>xpos</key>
-			<integer>370</integer>
-			<key>ypos</key>
-			<integer>310</integer>
-		</dict>
-		<key>53F8D382-0B54-46E0-AAC1-661AF0E3BB1A</key>
-		<dict>
-			<key>xpos</key>
-			<integer>370</integer>
-			<key>ypos</key>
-			<integer>450</integer>
-		</dict>
-		<key>5A12FA50-8214-4F9A-B1D7-028CEEA90333</key>
-		<dict>
-			<key>xpos</key>
-			<integer>370</integer>
-			<key>ypos</key>
-			<integer>590</integer>
-		</dict>
-		<key>6D0590A3-2AC9-449C-9D27-6BD80BDF8949</key>
-		<dict>
-			<key>xpos</key>
-			<integer>750</integer>
-			<key>ypos</key>
-			<integer>60</integer>
-		</dict>
-		<key>6FFB97A4-4163-49B0-8CC5-CCCB9B53C8CA</key>
-		<dict>
-			<key>xpos</key>
-			<integer>310</integer>
+			<integer>900</integer>
 			<key>ypos</key>
 			<integer>340</integer>
 		</dict>
-		<key>7D608320-88D8-4E7F-8974-F5FA16396003</key>
-		<dict>
-			<key>xpos</key>
-			<integer>310</integer>
-			<key>ypos</key>
-			<integer>60</integer>
-		</dict>
-		<key>81D0FEBA-D167-4237-89F2-96F3AE42BD20</key>
-		<dict>
-			<key>xpos</key>
-			<integer>810</integer>
-			<key>ypos</key>
-			<integer>130</integer>
-		</dict>
-		<key>A06B1937-B199-44DF-A70D-4C1404D4FC55</key>
-		<dict>
-			<key>xpos</key>
-			<integer>750</integer>
-			<key>ypos</key>
-			<integer>130</integer>
-		</dict>
-		<key>AA322223-330A-4792-B59F-5626F7AAF18F</key>
+		<key>A23E58BB-61D4-4102-951A-7A3996F073BA</key>
 		<dict>
 			<key>note</key>
-			<string>Project tasks</string>
+			<string>Take action or loop back by invoking the external trigger via AppleScript</string>
 			<key>xpos</key>
-			<integer>580</integer>
+			<integer>740</integer>
 			<key>ypos</key>
-			<integer>590</integer>
+			<integer>340</integer>
 		</dict>
-		<key>B7FFA1F0-055A-4273-8373-47FBD06361EE</key>
+		<key>B1B15BD6-663A-4B2B-B5D7-5EC7CEF816F1</key>
 		<dict>
 			<key>xpos</key>
-			<integer>310</integer>
+			<integer>360</integer>
 			<key>ypos</key>
-			<integer>480</integer>
+			<integer>650</integer>
 		</dict>
-		<key>BCCA5045-3989-451C-84B8-2C9CE4CC29D9</key>
-		<dict>
-			<key>note</key>
-			<string>Project items</string>
-			<key>xpos</key>
-			<integer>580</integer>
-			<key>ypos</key>
-			<integer>30</integer>
-		</dict>
-		<key>C191860C-C6AD-485F-8778-7C9AEF087EA6</key>
+		<key>B2511D88-9AF6-4ABE-BEA0-C4F8FE207C12</key>
 		<dict>
 			<key>xpos</key>
-			<integer>30</integer>
+			<integer>360</integer>
 			<key>ypos</key>
-			<integer>170</integer>
+			<integer>410</integer>
 		</dict>
-		<key>C73B03A5-DC59-4BEF-8A72-162CD6A80404</key>
-		<dict>
-			<key>note</key>
-			<string>Update options</string>
-			<key>xpos</key>
-			<integer>1280</integer>
-			<key>ypos</key>
-			<integer>310</integer>
-		</dict>
-		<key>CA67F1D0-10D8-485D-9FAB-8A55BD5C78CA</key>
-		<dict>
-			<key>note</key>
-			<string>Update time entry</string>
-			<key>xpos</key>
-			<integer>1280</integer>
-			<key>ypos</key>
-			<integer>170</integer>
-		</dict>
-		<key>CBE4F6C5-08B3-4CC7-ACA4-04B885C16215</key>
+		<key>B3D062C1-6A26-4CDB-BEB8-900B1B1E373D</key>
 		<dict>
 			<key>xpos</key>
-			<integer>180</integer>
+			<integer>820</integer>
 			<key>ypos</key>
-			<integer>200</integer>
+			<integer>220</integer>
 		</dict>
-		<key>DF923826-7D8A-479E-890C-3229C25E50C7</key>
-		<dict>
-			<key>note</key>
-			<string>Time entries</string>
-			<key>xpos</key>
-			<integer>1100</integer>
-			<key>ypos</key>
-			<integer>170</integer>
-		</dict>
-		<key>EB5731EA-0D3B-4BAC-970A-8DE6AB8A5D29</key>
-		<dict>
-			<key>note</key>
-			<string>Update project</string>
-			<key>xpos</key>
-			<integer>1280</integer>
-			<key>ypos</key>
-			<integer>30</integer>
-		</dict>
-		<key>F211A72C-F69E-4E2B-9E8C-39E8F7965B04</key>
+		<key>B5C43E68-5279-4D1A-8D66-C00C74CF5291</key>
 		<dict>
 			<key>xpos</key>
-			<integer>1040</integer>
+			<integer>360</integer>
 			<key>ypos</key>
-			<integer>200</integer>
+			<integer>530</integer>
 		</dict>
-		<key>F2A33763-35C4-450B-981E-FDFBD56B8CFD</key>
+		<key>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</key>
 		<dict>
 			<key>xpos</key>
-			<integer>310</integer>
+			<integer>360</integer>
 			<key>ypos</key>
-			<integer>620</integer>
-		</dict>
-		<key>F8F9873A-B6C0-4461-A863-BB69B40345ED</key>
-		<dict>
-			<key>xpos</key>
-			<integer>520</integer>
-			<key>ypos</key>
-			<integer>60</integer>
+			<integer>50</integer>
 		</dict>
 	</dict>
 	<key>version</key>

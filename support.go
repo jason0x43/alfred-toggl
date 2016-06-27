@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"math"
 	"sort"
 	"strings"
@@ -14,7 +12,7 @@ import (
 
 func checkRefresh() error {
 	if config.TestMode {
-		log.Printf("Test mode is active; not auto-refreshing")
+		dlog.Printf("Test mode is active; not auto-refreshing")
 		return nil
 	}
 
@@ -22,10 +20,10 @@ func checkRefresh() error {
 		return nil
 	}
 
-	log.Println("Refreshing cache...")
+	dlog.Println("Refreshing cache...")
 	err := refresh()
 	if err != nil {
-		log.Println("Error refreshing cache:", err)
+		dlog.Println("Error refreshing cache:", err)
 	}
 	return err
 }
@@ -37,11 +35,11 @@ func refresh() error {
 		return err
 	}
 
-	log.Printf("got account: %#v", account)
+	dlog.Printf("got account: %#v", account)
 
 	cache.Time = time.Now()
 	cache.Account = account
-	cache.Workspace = account.Data.Workspaces[0].Id
+	cache.Workspace = account.Data.Workspaces[0].ID
 	return alfred.SaveJSON(cacheFile, &cache)
 }
 
@@ -58,7 +56,7 @@ func getRunningTimer() (toggl.TimeEntry, bool) {
 func getProjectsByID() map[int]toggl.Project {
 	projectsByID := map[int]toggl.Project{}
 	for _, proj := range cache.Account.Data.Projects {
-		projectsByID[proj.Id] = proj
+		projectsByID[proj.ID] = proj
 	}
 	return projectsByID
 }
@@ -80,22 +78,22 @@ func findProjectByName(name string) (toggl.Project, bool) {
 	return toggl.Project{}, false
 }
 
-func findProjectByID(id int) (toggl.Project, bool) {
-	for _, proj := range cache.Account.Data.Projects {
-		if proj.Id == id {
-			return proj, true
+func getProjectByID(id int) (toggl.Project, int, bool) {
+	for i, proj := range cache.Account.Data.Projects {
+		if proj.ID == id {
+			return proj, i, true
 		}
 	}
-	return toggl.Project{}, false
+	return toggl.Project{}, 0, false
 }
 
-func findTimerByID(id int) (toggl.TimeEntry, bool) {
-	for _, entry := range cache.Account.Data.TimeEntries[:] {
-		if entry.Id == id {
-			return entry, true
+func getTimerByID(id int) (toggl.TimeEntry, int, bool) {
+	for i, entry := range cache.Account.Data.TimeEntries[:] {
+		if entry.ID == id {
+			return entry, i, true
 		}
 	}
-	return toggl.TimeEntry{}, false
+	return toggl.TimeEntry{}, 0, false
 }
 
 func findTimersByProjectID(pid int) []toggl.TimeEntry {
@@ -156,7 +154,7 @@ func getLatestTimeEntriesForProject(pid int) []toggl.TimeEntry {
 
 func projectHasTimeEntries(pid int) bool {
 	entries := cache.Account.Data.TimeEntries
-	for i, _ := range entries {
+	for i := range entries {
 		if entries[i].Pid == pid {
 			return true
 		}
@@ -213,7 +211,7 @@ func isSameWeek(date1 time.Time, date2 time.Time) bool {
 }
 
 func toIsoDateString(date time.Time) string {
-	return fmt.Sprintf("%d-%02d-%02d", date.Year(), date.Month(), date.Day())
+	return date.Format("2006-01-02")
 }
 
 func toHumanDateString(date time.Time) string {
@@ -242,10 +240,10 @@ func roundDuration(duration int64) int64 {
 		frac := 60.0 / float64(config.Rounding)
 		fracHours := int64(math.Ceil(float64(duration) / incr))
 		return fracHours * int64((100.0 / frac))
-	} else {
-		hours := float64(duration) / 3600.0
-		return int64(hours * 100)
 	}
+
+	hours := float64(duration) / 3600.0
+	return int64(hours * 100)
 }
 
 type byTime []toggl.TimeEntry

@@ -24,8 +24,8 @@ func (c TokenCommand) MenuItem() alfred.Item {
 	return alfred.Item{
 		Title:        c.Keyword(),
 		Autocomplete: c.Keyword(),
-		Arg:          "token",
-		Subtitle:     "Manually enter toggl.com API token",
+		// Arg:          "token",
+		Subtitle: "Manually enter toggl.com API token",
 	}
 }
 

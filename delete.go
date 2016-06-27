@@ -52,7 +52,7 @@ func (c DeleteAction) Do(args []string) (string, error) {
 	switch message.Type {
 	case "time entry":
 		for i, entry := range accountData.TimeEntries {
-			if entry.Id == message.ID {
+			if entry.ID == message.ID {
 				result.found = true
 				result.name = entry.Description
 				prompt := fmt.Sprintf("Are you sure you want to delete timer '%s'?", entry.Description)
@@ -77,7 +77,7 @@ func (c DeleteAction) Do(args []string) (string, error) {
 		}
 	case "project":
 		for i, project := range accountData.Projects {
-			if project.Id == message.ID {
+			if project.ID == message.ID {
 				result.found = true
 				result.name = project.Name
 				prompt := fmt.Sprintf("Are you sure you want to delete project '%s'?", project.Name)
@@ -102,7 +102,7 @@ func (c DeleteAction) Do(args []string) (string, error) {
 		}
 	case "tag":
 		for i, tag := range accountData.Tags {
-			if tag.Id == message.ID {
+			if tag.ID == message.ID {
 				result.found = true
 				result.name = tag.Name
 				prompt := fmt.Sprintf("Are you sure you want to delete tag '%s'?", tag.Name)
