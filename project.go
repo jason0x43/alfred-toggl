@@ -55,7 +55,7 @@ func (c ProjectCommand) Items(arg, data string) (items []*alfred.Item, err error
 		projectCfg := projectCfg{}
 
 		for _, entry := range cache.Account.Data.Projects {
-			if alfred.FuzzyMatches(entry.Name, arg) {
+			if entry.IsActive() && alfred.FuzzyMatches(entry.Name, arg) {
 				projectCfg.Project = &entry.ID
 
 				item := &alfred.Item{
@@ -231,13 +231,28 @@ func projectItems(project toggl.Project, arg string) (items []*alfred.Item, err 
 				},
 			})
 		}
+	} else {
+		if alfred.FuzzyMatches("Clear default", arg) {
+			c := config
+			c.DefaultProjectID = 0
+			items = append(items, &alfred.Item{
+				Title:        "Clear default",
+				Subtitle:     "Clear the default project",
+				Autocomplete: "Clear default",
+				Arg: &alfred.ItemArg{
+					Keyword: "options",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(c),
+				},
+			})
+		}
 	}
 
 	if alfred.FuzzyMatches("timers", arg) {
 		items = append(items, &alfred.Item{
-			Title:        "Timers...",
+			Title:        "Time entries...",
 			Subtitle:     "List associated time entries",
-			Autocomplete: "Timers...",
+			Autocomplete: "Time entries...",
 			Arg: &alfred.ItemArg{
 				Keyword: "timers",
 				Data:    alfred.Stringify(timerCfg{Project: &project.ID}),

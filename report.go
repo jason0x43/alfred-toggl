@@ -200,10 +200,10 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 				items = append(items, &alfred.Item{
 					Title:    entryTitle,
 					Subtitle: fmt.Sprintf("%.2f", float32(date.total)/100.0),
-					// Arg: &alfred.ItemArg{
-					// 	Keyword: "report",
-					// 	Data:    alfred.Stringify(&cfg),
-					// },
+					Arg: &alfred.ItemArg{
+						Keyword: "report",
+						Data:    alfred.Stringify(&cfg),
+					},
 				})
 
 				total += date.total

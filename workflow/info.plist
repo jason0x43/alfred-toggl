@@ -238,43 +238,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>json</key>
-				<string>{
-  "alfredworkflow" : {
-    "arg" : "{query}",
-    "config" : {
-      "keyword" : "tgl",
-      "scriptargtype" : 1,
-      "escaping" : 4,
-      "queuedelayimmediatelyinitially" : false,
-      "argumenttype" : 1,
-      "queuedelaymode" : 0,
-      "type" : 0,
-      "script" : ".\/alfred-toggl \"$1\" \"$data\"",
-      "title" : "tgl",
-      "runningsubtext" : "Refreshing data...",
-      "queuemode" : 1,
-      "subtext" : "Interact with Toggl",
-      "scriptfile" : "",
-      "alfredfiltersresults" : false,
-      "queuedelaycustom" : 1,
-      "withspace" : true
-    },
-    "variables" : {
-    }
-  }
-}</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.json</string>
-			<key>uid</key>
-			<string>B3D062C1-6A26-4CDB-BEB8-900B1B1E373D</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>alfredfiltersresults</key>
 				<false/>
 				<key>argumenttype</key>
@@ -506,21 +469,21 @@ This workflow allows the user to interact with the Toggl time tracking service. 
 		<key>2A0B6604-951B-4A30-920A-6841052B0C2E</key>
 		<dict>
 			<key>xpos</key>
-			<integer>360</integer>
+			<integer>270</integer>
 			<key>ypos</key>
 			<integer>170</integer>
 		</dict>
 		<key>2F84AF01-C03E-4208-BF3C-8C164102972F</key>
 		<dict>
 			<key>xpos</key>
-			<integer>360</integer>
+			<integer>270</integer>
 			<key>ypos</key>
 			<integer>290</integer>
 		</dict>
 		<key>369C8FF2-141E-4607-ADEB-060B5F8540AF</key>
 		<dict>
 			<key>xpos</key>
-			<integer>660</integer>
+			<integer>550</integer>
 			<key>ypos</key>
 			<integer>370</integer>
 		</dict>
@@ -534,7 +497,7 @@ This workflow allows the user to interact with the Toggl time tracking service. 
 		<key>6C0DF82C-C85F-4855-8728-F3ADC38BB920</key>
 		<dict>
 			<key>xpos</key>
-			<integer>900</integer>
+			<integer>800</integer>
 			<key>ypos</key>
 			<integer>340</integer>
 		</dict>
@@ -543,42 +506,35 @@ This workflow allows the user to interact with the Toggl time tracking service. 
 			<key>note</key>
 			<string>Take action or loop back by invoking the external trigger via AppleScript</string>
 			<key>xpos</key>
-			<integer>740</integer>
+			<integer>630</integer>
 			<key>ypos</key>
 			<integer>340</integer>
 		</dict>
 		<key>B1B15BD6-663A-4B2B-B5D7-5EC7CEF816F1</key>
 		<dict>
 			<key>xpos</key>
-			<integer>360</integer>
+			<integer>270</integer>
 			<key>ypos</key>
 			<integer>650</integer>
 		</dict>
 		<key>B2511D88-9AF6-4ABE-BEA0-C4F8FE207C12</key>
 		<dict>
 			<key>xpos</key>
-			<integer>360</integer>
+			<integer>270</integer>
 			<key>ypos</key>
 			<integer>410</integer>
-		</dict>
-		<key>B3D062C1-6A26-4CDB-BEB8-900B1B1E373D</key>
-		<dict>
-			<key>xpos</key>
-			<integer>820</integer>
-			<key>ypos</key>
-			<integer>220</integer>
 		</dict>
 		<key>B5C43E68-5279-4D1A-8D66-C00C74CF5291</key>
 		<dict>
 			<key>xpos</key>
-			<integer>360</integer>
+			<integer>270</integer>
 			<key>ypos</key>
 			<integer>530</integer>
 		</dict>
 		<key>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</key>
 		<dict>
 			<key>xpos</key>
-			<integer>360</integer>
+			<integer>270</integer>
 			<key>ypos</key>
 			<integer>50</integer>
 		</dict>
