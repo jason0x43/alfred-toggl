@@ -30,6 +30,7 @@ func (c TagCommand) About() *alfred.CommandDef {
 
 // Items returns a list of filter items
 func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
+	dlog.Printf("getting tag items")
 	if err = checkRefresh(); err != nil {
 		return
 	}

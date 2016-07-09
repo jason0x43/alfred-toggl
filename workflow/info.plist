@@ -395,7 +395,7 @@
 				<key>runningsubtext</key>
 				<string>Syncing with toggl.com...</string>
 				<key>script</key>
-				<string>./alfred-toggl "$1" "{\"keyword\":\"status\"}"</string>
+				<string>./alfred-toggl "$1" "{\"keyword\":\"status\",\"data\":\"go\"}"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>

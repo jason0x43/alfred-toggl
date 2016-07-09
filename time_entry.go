@@ -72,7 +72,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 							Data:    alfred.Stringify(timerCfg{ToStart: toStart}),
 						},
 					}
-					item.MakeChoice(false)
+					item.AddCheckBox(false)
 					items = append(items, item)
 				}
 			}
@@ -138,9 +138,12 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 				},
 			}
 
-			item.AddMod(alfred.ModAlt, "Choose project...", &alfred.ItemArg{
-				Keyword: "timers",
-				Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
+			item.AddMod(alfred.ModAlt, &alfred.ItemMod{
+				Subtitle: "Choose project...",
+				Arg: &alfred.ItemArg{
+					Keyword: "timers",
+					Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
+				},
 			})
 
 			items = append(items, item)
@@ -165,10 +168,13 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 				modTitle = "Start this timer"
 			}
 
-			item.AddMod("cmd", modTitle, &alfred.ItemArg{
-				Keyword: "timers",
-				Mode:    alfred.ModeDo,
-				Data:    alfred.Stringify(timerCfg{ToToggle: &entry.ID}),
+			item.AddMod(alfred.ModCmd, &alfred.ItemMod{
+				Subtitle: modTitle,
+				Arg: &alfred.ItemArg{
+					Keyword: "timers",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(timerCfg{ToToggle: &entry.ID}),
+				},
 			})
 
 			var seconds int64
@@ -180,7 +186,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 				seconds = entry.Duration
 			}
 
-			duration := float32(roundDuration(seconds)) / 100.0
+			duration := float64(seconds) / 3600.0
 
 			item.Subtitle = fmt.Sprintf("%.2f, %s from %s to ", duration,
 				toHumanDateString(startTime), startTime.Local().Format("3:04pm"))
@@ -461,7 +467,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item,
 							Data:    alfred.Stringify(timerCfg{ToUpdate: &updateEntry}),
 						},
 					}
-					item.MakeChoice(entry.Pid == proj.ID)
+					item.AddCheckBox(entry.Pid == proj.ID)
 					items = append(items, item)
 				}
 			}
@@ -496,7 +502,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item,
 						Title:        tag.Name,
 						Autocomplete: tag.Name,
 					}
-					item.MakeChoice(entry.HasTag(tag.Name))
+					item.AddCheckBox(entry.HasTag(tag.Name))
 
 					updateEntry := entry.Copy()
 					if entry.HasTag(tag.Name) {
@@ -634,6 +640,21 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item,
 				Subtitle:     "Change the duration",
 			}
 
+			// Add an option to round the duration down to a time increment
+			roundedDuration := float32(roundDuration(entry.Duration, true)) / 100
+			updateTimer := toggl.TimeEntry{
+				ID:       entry.ID,
+				Duration: int64(roundedDuration * 60 * 60),
+			}
+			item.AddMod(alfred.ModAlt, &alfred.ItemMod{
+				Subtitle: fmt.Sprintf("Round down to %.2f", roundedDuration),
+				Arg: &alfred.ItemArg{
+					Keyword: "timers",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(timerCfg{ToUpdate: &updateTimer}),
+				},
+			})
+
 			if strings.ToLower(parts[0]) == "duration:" {
 				item.Subtitle = "Change duration (end time will be adjusted)"
 			}
@@ -641,10 +662,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item,
 			if len(parts) > 1 {
 				newDuration := parts[1]
 				if val, err := strconv.ParseFloat(newDuration, 64); err == nil {
-					updateTimer := toggl.TimeEntry{
-						ID:       entry.ID,
-						Duration: int64(val * 60 * 60),
-					}
+					updateTimer.Duration = int64(val * 60 * 60)
 					item.Title = fmt.Sprintf("%s: %.2f", command, val)
 					item.Subtitle = "Press enter to change duration (end time will be adjusted)"
 					item.Arg = &alfred.ItemArg{

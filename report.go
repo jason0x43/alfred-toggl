@@ -89,8 +89,14 @@ func (c ReportFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 	items = append(items, reportItems...)
 
 	if len(items) == 0 {
+		cfg.Span = nil
+
 		item := &alfred.Item{
 			Title: "No time entries for " + span.Name,
+			Arg: &alfred.ItemArg{
+				Keyword: "report",
+				Data:    alfred.Stringify(&cfg),
+			},
 		}
 		items = append(items, item)
 	}
@@ -115,6 +121,7 @@ type reportCfg struct {
 
 type span struct {
 	Name     string
+	Label    string
 	Start    time.Time
 	End      time.Time
 	MultiDay bool
@@ -149,10 +156,17 @@ type summaryReport struct {
 func createReportMenuItem(s *span) (item *alfred.Item) {
 	cfg := reportCfg{Span: s}
 
+	subtitle := "Generate a report for "
+	if s.Label != "" {
+		subtitle += s.Label
+	} else {
+		subtitle += s.Name
+	}
+
 	item = &alfred.Item{
-		Autocomplete: s.Name + " ",
+		Autocomplete: s.Name,
 		Title:        s.Name,
-		Subtitle:     "Generate a report for " + s.Name,
+		Subtitle:     subtitle,
 		Arg: &alfred.ItemArg{
 			Keyword: "report",
 			Data:    alfred.Stringify(&cfg),
@@ -162,9 +176,12 @@ func createReportMenuItem(s *span) (item *alfred.Item) {
 	if s.MultiDay {
 		grouping := groupByDay
 		cfg.Grouping = &grouping
-		item.AddMod(alfred.ModAlt, item.Subtitle+", grouping entries by day", &alfred.ItemArg{
-			Keyword: "report",
-			Data:    alfred.Stringify(&cfg),
+		item.AddMod(alfred.ModAlt, &alfred.ItemMod{
+			Subtitle: item.Subtitle + ", grouping entries by day",
+			Arg: &alfred.ItemArg{
+				Keyword: "report",
+				Data:    alfred.Stringify(&cfg),
+			},
 		})
 	}
 
@@ -184,10 +201,15 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 	var total int64
 	var totalName string
 
+	spanName := span.Name
+	if span.Label != "" {
+		spanName = span.Label
+	}
+
 	if grouping == groupByDay {
 		dlog.Printf("checking %d dates", len(report.dates))
 		for _, date := range report.dates {
-			totalName = "for " + span.Name
+			totalName = "for " + spanName
 			entryTitle := date.name
 
 			if alfred.FuzzyMatches(entryTitle, arg) {
@@ -211,11 +233,13 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 		}
 	} else {
 		dlog.Printf("checking %d projects", len(report.projects))
+
 		for _, project := range report.projects {
 			if projectID != -1 {
 				dlog.Printf("have projectID: %d", projectID)
 
-				totalName = fmt.Sprintf("for %s for %s", span.Name, project.name)
+				totalName = fmt.Sprintf("for %s for %s", spanName, project.name)
+
 				for desc, entry := range project.entries {
 					dlog.Printf("getting info for %#v", entry)
 					entryTitle := desc
@@ -233,7 +257,7 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 					}
 				}
 			} else {
-				totalName = "for " + span.Name
+				totalName = "for " + spanName
 				entryTitle := project.name
 
 				cfg.Project = &project.id
@@ -297,7 +321,8 @@ func getSpan(arg string) (s span, err error) {
 		s.Start = toDayStart(time.Now().AddDate(0, 0, -1))
 		s.End = toDayEnd(s.Start)
 	} else if arg == "week" {
-		s.Name = "this week"
+		s.Name = "week"
+		s.Label = "this week"
 		start := time.Now()
 		// TODO: consider configurable work week bounds
 		delta := -int(start.Weekday())
@@ -391,7 +416,7 @@ func generateReport(since, until time.Time, projectID int) (*summaryReport, erro
 				project.running = true
 			}
 
-			duration = roundDuration(duration)
+			duration = roundDuration(duration, false)
 
 			if _, ok := project.entries[entry.Description]; !ok {
 				project.entries[entry.Description] = &timeEntry{description: entry.Description}

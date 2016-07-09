@@ -231,17 +231,37 @@ func toHumanDateString(date time.Time) string {
 	}
 }
 
-// convert a number of seconds to a fractional hour, as an int
-// 1.25 hours = 125
-// 0.25 hours = 25
-func roundDuration(duration int64) int64 {
+// roundDuration converts a number of seconds to a quantized fractional hour, as an int
+//
+//   1.25 hours = 125
+//   0.25 hours = 25
+//
+// If the `floor` argument is true, any fractional part of the pre-quantized
+// value is truncated before quantization.
+//
+//   floor == false: 1.05 -> 1.25 -> 125
+//   floor == true: 1.05 -> 1.00 -> 100
+//
+func roundDuration(duration int64, floor bool) int64 {
 	if config.Rounding != 0 {
-		incr := float64(config.Rounding * 60)
+		// the number of seconds in the rounding increment
+		incr := config.Rounding * 60
+
+		// the number of increments in the duration
+		var fracHours int64
+		if floor {
+			fracHours = int64(math.Floor(float64(duration) / float64(incr)))
+		} else {
+			fracHours = int64(math.Ceil(float64(duration) / float64(incr)))
+		}
+
+		// the fraction of hour that is being rounded to
 		frac := 60.0 / float64(config.Rounding)
-		fracHours := int64(math.Ceil(float64(duration) / incr))
+
 		return fracHours * int64((100.0 / frac))
 	}
 
+	// not rounding, so just return the duration as a number of hours * 100
 	hours := float64(duration) / 3600.0
 	return int64(hours * 100)
 }
