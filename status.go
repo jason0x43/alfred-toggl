@@ -77,7 +77,7 @@ func (c StatusFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 
 	span, _ := getSpan("today")
 	var report *summaryReport
-	report, err = generateReport(span.Start, span.End, -1)
+	report, err = generateReport(span.Start, span.End, -1, "")
 	for _, date := range report.dates {
 		items = append(items, &alfred.Item{
 			Title: fmt.Sprintf("Total time for today: %.2f", float32(date.total)/100.0),

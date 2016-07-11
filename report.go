@@ -34,9 +34,6 @@ func (c ReportFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 		return
 	}
 
-	pid := -1
-	var span span
-
 	var cfg reportCfg
 	if data != "" {
 		if err = json.Unmarshal([]byte(data), &cfg); err != nil {
@@ -44,10 +41,7 @@ func (c ReportFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 		}
 	}
 
-	if cfg.Project != nil {
-		pid = *cfg.Project
-	}
-
+	var span span
 	if cfg.Span != nil {
 		span = *cfg.Span
 	} else {
@@ -76,13 +70,8 @@ func (c ReportFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 		return items, nil
 	}
 
-	var grouping reportGrouping
-	if cfg.Grouping != nil {
-		grouping = *cfg.Grouping
-	}
-
 	var reportItems []*alfred.Item
-	if reportItems, err = createReportItems(arg, data, span, pid, grouping); err != nil {
+	if reportItems, err = createReportItems(arg, data, &cfg, span); err != nil {
 		return
 	}
 
@@ -114,9 +103,11 @@ const (
 )
 
 type reportCfg struct {
-	Project  *int            `json:"project,omitempty"`
-	Span     *span           `json:"span,omitempty"`
-	Grouping *reportGrouping `json:"grouping,omitempty"`
+	Project    *int            `json:"project,omitempty"`
+	EntryTitle *string         `json:"entrytitle,omitempty"`
+	Span       *span           `json:"span,omitempty"`
+	Grouping   *reportGrouping `json:"grouping,omitempty"`
+	Previous   *reportCfg      `json:"previous,omitempty"`
 }
 
 type span struct {
@@ -188,15 +179,30 @@ func createReportMenuItem(s *span) (item *alfred.Item) {
 	return
 }
 
-func createReportItems(arg, data string, span span, projectID int, grouping reportGrouping) (items []*alfred.Item, err error) {
+func createReportItems(arg, data string, cfg *reportCfg, span span) (items []*alfred.Item, err error) {
+	projectID := -1
+	if cfg.Project != nil {
+		projectID = *cfg.Project
+	}
+
+	entryTitle := ""
+	if cfg.EntryTitle != nil {
+		entryTitle = *cfg.EntryTitle
+	}
+
+	var grouping reportGrouping
+	if cfg.Grouping != nil {
+		grouping = *cfg.Grouping
+	}
+
 	var report *summaryReport
-	if report, err = generateReport(span.Start, span.End, projectID); err != nil {
+	if report, err = generateReport(span.Start, span.End, projectID, entryTitle); err != nil {
 		return
 	}
 
 	dlog.Printf("creating report with data %#v", data)
 
-	cfg := reportCfg{Span: &span}
+	newCfg := reportCfg{Span: &span, Previous: cfg}
 
 	var total int64
 	var totalName string
@@ -207,24 +213,30 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 	}
 
 	if grouping == groupByDay {
+		// By-day report
+
 		dlog.Printf("checking %d dates", len(report.dates))
 		for _, date := range report.dates {
 			totalName = "for " + spanName
-			entryTitle := date.name
+			if entryTitle != "" {
+				totalName += " for " + entryTitle
+			}
 
-			if alfred.FuzzyMatches(entryTitle, arg) {
+			dateName := date.name
+
+			if alfred.FuzzyMatches(dateName, arg) {
 				if span, e := getSpan(date.name); e == nil {
-					cfg.Span = &span
+					newCfg.Span = &span
 				} else {
 					dlog.Printf("Error getting span for %s: %v", date.name, e)
 				}
 
 				items = append(items, &alfred.Item{
-					Title:    entryTitle,
+					Title:    dateName,
 					Subtitle: fmt.Sprintf("%.2f", float32(date.total)/100.0),
 					Arg: &alfred.ItemArg{
 						Keyword: "report",
-						Data:    alfred.Stringify(&cfg),
+						Data:    alfred.Stringify(&newCfg),
 					},
 				})
 
@@ -232,21 +244,34 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 			}
 		}
 	} else {
+		// By-project report
+
 		dlog.Printf("checking %d projects", len(report.projects))
 
 		for _, project := range report.projects {
 			if projectID != -1 {
+				// By-project report for a single project
+
 				dlog.Printf("have projectID: %d", projectID)
 
 				totalName = fmt.Sprintf("for %s for %s", spanName, project.name)
 
+				grouping := groupByDay
+				newCfg.Grouping = &grouping
+
 				for desc, entry := range project.entries {
 					dlog.Printf("getting info for %#v", entry)
 					entryTitle := desc
+					newCfg.EntryTitle = &entryTitle
+
 					if alfred.FuzzyMatches(entryTitle, arg) {
 						item := &alfred.Item{
 							Title:    entryTitle,
 							Subtitle: fmt.Sprintf("%.2f", float32(entry.total)/100.0),
+							Arg: &alfred.ItemArg{
+								Keyword: "report",
+								Data:    alfred.Stringify(&newCfg),
+							},
 						}
 
 						if entry.running {
@@ -255,21 +280,29 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 
 						items = append(items, item)
 					}
+
+					total += entry.total
 				}
 			} else {
+				// By-project report for all projects
+
 				totalName = "for " + spanName
-				entryTitle := project.name
+				if entryTitle != "" {
+					totalName += " for " + entryTitle
+				}
 
-				cfg.Project = &project.id
-				dlog.Printf("checking if '%s' fuzzyMatches '%s'", arg, entryTitle)
+				projectName := project.name
 
-				if alfred.FuzzyMatches(entryTitle, arg) {
+				newCfg.Project = &project.id
+				dlog.Printf("checking if '%s' fuzzyMatches '%s'", arg, projectName)
+
+				if alfred.FuzzyMatches(projectName, arg) {
 					item := &alfred.Item{
-						Title:    entryTitle,
+						Title:    projectName,
 						Subtitle: fmt.Sprintf("%.2f", float32(project.total)/100.0),
 						Arg: &alfred.ItemArg{
 							Keyword: "report",
-							Data:    alfred.Stringify(&cfg),
+							Data:    alfred.Stringify(&newCfg),
 						},
 					}
 
@@ -286,6 +319,7 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 
 	sort.Sort(alfred.ByTitle(items))
 
+	// Add the Total line at the top
 	if totalName != "" && arg == "" {
 		title := fmt.Sprintf("Total hours %s: %.2f", totalName, float32(total)/100.0)
 		item := &alfred.Item{
@@ -293,15 +327,19 @@ func createReportItems(arg, data string, span span, projectID int, grouping repo
 			Subtitle: alfred.Line,
 		}
 
-		cfg.Project = nil
-
-		if projectID == -1 {
-			cfg.Span = nil
+		if newCfg.EntryTitle != nil {
+			newCfg.EntryTitle = nil
+		} else if newCfg.Project != nil {
+			newCfg.Project = nil
+		} else {
+			newCfg.Span = nil
 		}
 
-		item.Arg = &alfred.ItemArg{
-			Keyword: "report",
-			Data:    alfred.Stringify(&cfg),
+		if cfg.Previous != nil {
+			item.Arg = &alfred.ItemArg{
+				Keyword: "report",
+				Data:    alfred.Stringify(cfg.Previous),
+			}
 		}
 
 		items = alfred.InsertItem(items, item, 0)
@@ -367,7 +405,7 @@ func getSpan(arg string) (s span, err error) {
 	return
 }
 
-func generateReport(since, until time.Time, projectID int) (*summaryReport, error) {
+func generateReport(since, until time.Time, projectID int, entryTitle string) (*summaryReport, error) {
 	dlog.Printf("Generating report from %s to %s for %d", since, until, projectID)
 
 	report := summaryReport{
@@ -381,6 +419,10 @@ func generateReport(since, until time.Time, projectID int) (*summaryReport, erro
 
 		if !start.Before(since) && !until.Before(start) {
 			if projectID != -1 && entry.Pid != projectID {
+				continue
+			}
+
+			if entryTitle != "" && entry.Description != entryTitle {
 				continue
 			}
 
