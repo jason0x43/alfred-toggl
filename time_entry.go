@@ -675,6 +675,32 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item,
 
 			items = append(items, item)
 		}
+
+		if alfred.FuzzyMatches("start", query) {
+			items = append(items, &alfred.Item{
+				Title:    "Start",
+				Subtitle: "Start this time entry",
+				Arg: &alfred.ItemArg{
+					Keyword: "timers",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(timerCfg{ToToggle: &entry.ID}),
+				},
+				Autocomplete: "Start",
+			})
+		}
+	} else {
+		if alfred.FuzzyMatches("stop", query) {
+			items = append(items, &alfred.Item{
+				Title:    "Stop",
+				Subtitle: "Stop this time entry",
+				Arg: &alfred.ItemArg{
+					Keyword: "timers",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(timerCfg{ToToggle: &entry.ID}),
+				},
+				Autocomplete: "Stop",
+			})
+		}
 	}
 
 	if alfred.FuzzyMatches("delete", query) {
