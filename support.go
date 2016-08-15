@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/jason0x43/go-alfred"
-	"github.com/jason0x43/go-toggl"
 )
 
 func checkRefresh() error {
@@ -29,7 +28,7 @@ func checkRefresh() error {
 }
 
 func refresh() error {
-	s := toggl.OpenSession(config.APIKey)
+	s := OpenSession(config.APIKey)
 	account, err := s.GetAccount()
 	if err != nil {
 		return err
@@ -43,61 +42,61 @@ func refresh() error {
 	return alfred.SaveJSON(cacheFile, &cache)
 }
 
-func getRunningTimer() (toggl.TimeEntry, bool) {
+func getRunningTimer() (TimeEntry, bool) {
 	for _, entry := range cache.Account.Data.TimeEntries {
 		if entry.IsRunning() {
 			return entry, true
 		}
 	}
 
-	return toggl.TimeEntry{}, false
+	return TimeEntry{}, false
 }
 
-func getProjectsByID() map[int]toggl.Project {
-	projectsByID := map[int]toggl.Project{}
+func getProjectsByID() map[int]Project {
+	projectsByID := map[int]Project{}
 	for _, proj := range cache.Account.Data.Projects {
 		projectsByID[proj.ID] = proj
 	}
 	return projectsByID
 }
 
-func getProjectsByName() map[string]toggl.Project {
-	projectsByName := map[string]toggl.Project{}
+func getProjectsByName() map[string]Project {
+	projectsByName := map[string]Project{}
 	for _, proj := range cache.Account.Data.Projects {
 		projectsByName[proj.Name] = proj
 	}
 	return projectsByName
 }
 
-func findProjectByName(name string) (toggl.Project, bool) {
+func findProjectByName(name string) (Project, bool) {
 	for _, proj := range cache.Account.Data.Projects {
 		if proj.Name == name {
 			return proj, true
 		}
 	}
-	return toggl.Project{}, false
+	return Project{}, false
 }
 
-func getProjectByID(id int) (toggl.Project, int, bool) {
+func getProjectByID(id int) (Project, int, bool) {
 	for i, proj := range cache.Account.Data.Projects {
 		if proj.ID == id {
 			return proj, i, true
 		}
 	}
-	return toggl.Project{}, 0, false
+	return Project{}, 0, false
 }
 
-func getTimerByID(id int) (toggl.TimeEntry, int, bool) {
+func getTimerByID(id int) (TimeEntry, int, bool) {
 	for i, entry := range cache.Account.Data.TimeEntries[:] {
 		if entry.ID == id {
 			return entry, i, true
 		}
 	}
-	return toggl.TimeEntry{}, 0, false
+	return TimeEntry{}, 0, false
 }
 
-func findTimersByProjectID(pid int) []toggl.TimeEntry {
-	var entries []toggl.TimeEntry
+func findTimersByProjectID(pid int) []TimeEntry {
+	var entries []TimeEntry
 	for _, entry := range cache.Account.Data.TimeEntries[:] {
 		if entry.Pid == pid {
 			entries = append(entries, entry)
@@ -106,19 +105,19 @@ func findTimersByProjectID(pid int) []toggl.TimeEntry {
 	return entries
 }
 
-func findTagByName(name string) (toggl.Tag, bool) {
+func findTagByName(name string) (Tag, bool) {
 	for _, tag := range cache.Account.Data.Tags {
 		if tag.Name == name {
 			return tag, true
 		}
 	}
-	return toggl.Tag{}, false
+	return Tag{}, false
 }
 
-func getTimeEntriesForQuery(query string) []toggl.TimeEntry {
+func getTimeEntriesForQuery(query string) []TimeEntry {
 	entries := cache.Account.Data.TimeEntries[:]
 	matchQuery := strings.ToLower(query)
-	matched := []toggl.TimeEntry{}
+	matched := []TimeEntry{}
 
 	for _, entry := range entries {
 		if strings.Contains(strings.ToLower(entry.Description), matchQuery) {
@@ -130,9 +129,9 @@ func getTimeEntriesForQuery(query string) []toggl.TimeEntry {
 	return matched
 }
 
-func getLatestTimeEntriesForProject(pid int) []toggl.TimeEntry {
+func getLatestTimeEntriesForProject(pid int) []TimeEntry {
 	entries := cache.Account.Data.TimeEntries[:]
-	matched := map[string]toggl.TimeEntry{}
+	matched := map[string]TimeEntry{}
 
 	for _, entry := range entries {
 		if entry.Pid == pid {
@@ -143,7 +142,7 @@ func getLatestTimeEntriesForProject(pid int) []toggl.TimeEntry {
 		}
 	}
 
-	matchedArr := []toggl.TimeEntry{}
+	matchedArr := []TimeEntry{}
 	for _, value := range matched {
 		matchedArr = append(matchedArr, value)
 	}
@@ -162,9 +161,9 @@ func projectHasTimeEntries(pid int) bool {
 	return false
 }
 
-func getLatestTimeEntriesForTag(tag string) []toggl.TimeEntry {
+func getLatestTimeEntriesForTag(tag string) []TimeEntry {
 	entries := cache.Account.Data.TimeEntries[:]
-	matched := []toggl.TimeEntry{}
+	matched := []TimeEntry{}
 
 	for _, entry := range entries {
 		for _, t := range entry.Tags {
@@ -266,7 +265,7 @@ func roundDuration(duration int64, floor bool) int64 {
 	return int64(hours * 100)
 }
 
-type byTime []toggl.TimeEntry
+type byTime []TimeEntry
 
 func (b byTime) Len() int {
 	return len(b)

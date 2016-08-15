@@ -1,9 +1,6 @@
 package main
 
-import (
-	"github.com/jason0x43/go-alfred"
-	"github.com/jason0x43/go-toggl"
-)
+import "github.com/jason0x43/go-alfred"
 
 // LoginCommand is a command
 type LoginCommand struct{}
@@ -55,9 +52,9 @@ func (c LoginCommand) Do(args []string) (out string, err error) {
 	}
 	dlog.Printf("password: *****")
 
-	var session toggl.Session
 	session, err = toggl.NewSession(username, password)
 	if err != nil {
+	var session Session
 		return
 	}
 

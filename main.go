@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/jason0x43/go-alfred"
-	"github.com/jason0x43/go-toggl"
 )
 
 var dlog = log.New(os.Stderr, "[toggl] ", log.LstdFlags)

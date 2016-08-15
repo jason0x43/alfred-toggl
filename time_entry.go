@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/jason0x43/go-alfred"
-	"github.com/jason0x43/go-toggl"
 )
 
 // entry -------------------------------------------------
@@ -80,7 +79,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 		}
 	}
 
-	var entries []toggl.TimeEntry
+	var entries []TimeEntry
 
 	if pid == -1 {
 		// If the user didn't specify a PID, use the default one
@@ -105,7 +104,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 		dlog.Printf("showing all %d timers", len(entries))
 	}
 
-	var filtered []toggl.TimeEntry
+	var filtered []TimeEntry
 	for _, entry := range entries {
 		if alfred.FuzzyMatches(entry.Description, arg) {
 			filtered = append(filtered, entry)
@@ -238,8 +237,8 @@ func (c TimeEntryCommand) Do(arg, data string) (out string, err error) {
 
 	if cfg.ToUpdate != nil {
 		dlog.Printf("updating time entry %v", cfg.ToUpdate)
-		var timer toggl.TimeEntry
 		if timer, err = updateTimeEntry(cfg.ToUpdate); err != nil {
+		var timer TimeEntry
 			return
 		}
 		return fmt.Sprintf(`Updated time entry "%s"`, timer.Description), nil
@@ -247,7 +246,7 @@ func (c TimeEntryCommand) Do(arg, data string) (out string, err error) {
 
 	if cfg.ToStart != nil {
 		dlog.Printf("starting new entry %v", cfg.ToStart)
-		var timer toggl.TimeEntry
+		var timer TimeEntry
 		if timer, err = startTimeEntry(*cfg.ToStart); err != nil {
 			return
 		}
@@ -256,7 +255,7 @@ func (c TimeEntryCommand) Do(arg, data string) (out string, err error) {
 
 	if cfg.ToToggle != nil {
 		dlog.Printf("toggling entry %v", cfg.ToToggle)
-		var timer toggl.TimeEntry
+		var timer TimeEntry
 		if timer, err = toggleTimeEntry(*cfg.ToToggle); err != nil {
 			return
 		}
@@ -268,7 +267,7 @@ func (c TimeEntryCommand) Do(arg, data string) (out string, err error) {
 
 	if cfg.ToDelete != nil {
 		dlog.Printf("deleting entry %v", cfg.ToDelete)
-		var timer toggl.TimeEntry
+		var timer TimeEntry
 		if timer, err = deleteTimeEntry(*cfg.ToDelete); err != nil {
 			return
 		}
@@ -285,9 +284,9 @@ type timerCfg struct {
 	Property *string          `json:"property,omitempty"`
 	Project  *int             `json:"project,omitempty"`
 	ToStart  *startDesc       `json:"tostart,omitempty"`
-	ToUpdate *toggl.TimeEntry `json:"toupdate,omitempty"`
 	ToDelete *int             `json:"todelete,omitempty"`
 	ToToggle *int             `json:"totoggle,omitempty"`
+	ToUpdate *TimeEntry `json:"toupdate,omitempty"`
 }
 
 type startDesc struct {
@@ -295,7 +294,7 @@ type startDesc struct {
 	Pid         int    `json:"pid"`
 }
 
-func deleteTimeEntry(id int) (entry toggl.TimeEntry, err error) {
+func deleteTimeEntry(id int) (entry TimeEntry, err error) {
 	var ok bool
 	var index int
 	if entry, index, ok = getTimerByID(id); !ok {
@@ -303,7 +302,7 @@ func deleteTimeEntry(id int) (entry toggl.TimeEntry, err error) {
 		return
 	}
 
-	session := toggl.OpenSession(config.APIKey)
+	session := OpenSession(config.APIKey)
 	if _, err = session.DeleteTimeEntry(entry); err == nil {
 		adata := &cache.Account.Data
 		if index < len(adata.TimeEntries)-1 {
@@ -319,8 +318,8 @@ func deleteTimeEntry(id int) (entry toggl.TimeEntry, err error) {
 	return
 }
 
-func startTimeEntry(desc startDesc) (entry toggl.TimeEntry, err error) {
-	session := toggl.OpenSession(config.APIKey)
+func startTimeEntry(desc startDesc) (entry TimeEntry, err error) {
+	session := OpenSession(config.APIKey)
 
 	if desc.Pid != 0 {
 		entry, err = session.StartTimeEntryForProject(desc.Description, desc.Pid)
@@ -339,8 +338,8 @@ func startTimeEntry(desc startDesc) (entry toggl.TimeEntry, err error) {
 	return entry, nil
 }
 
-func toggleTimeEntry(toToggle int) (updatedEntry toggl.TimeEntry, err error) {
-	var entry toggl.TimeEntry
+func toggleTimeEntry(toToggle int) (updatedEntry TimeEntry, err error) {
+	var entry TimeEntry
 	var ok bool
 	var index int
 	if entry, index, ok = getTimerByID(toToggle); !ok {
@@ -349,7 +348,7 @@ func toggleTimeEntry(toToggle int) (updatedEntry toggl.TimeEntry, err error) {
 	}
 
 	running, isRunning := getRunningTimer()
-	session := toggl.OpenSession(config.APIKey)
+	session := OpenSession(config.APIKey)
 
 	if entry.IsRunning() {
 		if updatedEntry, err = session.StopTimeEntry(entry); err != nil {
@@ -385,8 +384,8 @@ func toggleTimeEntry(toToggle int) (updatedEntry toggl.TimeEntry, err error) {
 	return
 }
 
-func updateTimeEntry(entryIn *toggl.TimeEntry) (entry toggl.TimeEntry, err error) {
-	session := toggl.OpenSession(config.APIKey)
+func updateTimeEntry(entryIn TimeEntry) (entry TimeEntry, err error) {
+	session := OpenSession(config.APIKey)
 
 	if entry, err = session.UpdateTimeEntry(*entryIn); err != nil {
 		return
@@ -414,7 +413,7 @@ func getNewTime(original, new time.Time) time.Time {
 	return original.Add(delta)
 }
 
-func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item, err error) {
+func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err error) {
 	parts := alfred.CleanSplitN(query, " ", 2)
 
 	if alfred.FuzzyMatches("description:", parts[0]) {
@@ -559,10 +558,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item,
 			if newTime, err := time.Parse("15:04", timeStr); err == nil {
 				newStart := getNewTime(entry.StartTime().Local(), newTime)
 
-				updateTimer := toggl.TimeEntry{
-					ID:    entry.ID,
-					Start: &newStart,
-				}
+				updateTimer := entry.Copy()
 
 				if !entry.IsRunning() {
 					updateTimer.Duration = entry.Duration
@@ -609,11 +605,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item,
 				if newTime, err := time.Parse("15:04", timeStr); err == nil {
 					newStop := getNewTime(entry.StopTime().Local(), newTime)
 
-					updateTimer := toggl.TimeEntry{
-						ID:       entry.ID,
-						Stop:     &newStop,
-						Duration: entry.Duration,
-					}
+					updateTimer := entry.Copy()
 
 					item.Title = command + ": " + timeStr
 					item.Subtitle = "Press enter to change start time (end time will also be adjusted)"
@@ -642,11 +634,9 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []*alfred.Item,
 
 			// Add an option to round the duration down to a time increment
 			roundedDuration := float32(roundDuration(entry.Duration, true)) / 100
-			updateTimer := toggl.TimeEntry{
-				ID:       entry.ID,
-				Duration: int64(roundedDuration * 60 * 60),
-			}
 			item.AddMod(alfred.ModAlt, &alfred.ItemMod{
+			updateTimer := entry.Copy()
+			updateTimer.Duration = int64(roundedDuration * 60 * 60)
 				Subtitle: fmt.Sprintf("Round down to %.2f", roundedDuration),
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
