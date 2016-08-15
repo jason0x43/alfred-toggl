@@ -5,33 +5,21 @@ import "github.com/jason0x43/go-alfred"
 // LogoutCommand is a command
 type LogoutCommand struct{}
 
-// Keyword returns the command's keyword
-func (c LogoutCommand) Keyword() string {
-	return "logout"
-}
-
-// IsEnabled returns true if the command is enabled
-func (c LogoutCommand) IsEnabled() bool {
-	return config.APIKey != ""
-}
-
-// MenuItem returns the command's menu item
-func (c LogoutCommand) MenuItem() alfred.Item {
-	return alfred.Item{
-		Title:        c.Keyword(),
-		Autocomplete: c.Keyword(),
-		Subtitle:     "Logout of Toggl, but keep any local config",
-		// Arg:          "logout",
+// About returns information about this command
+func (c LogoutCommand) About() alfred.CommandDef {
+	return alfred.CommandDef{
+		Keyword:     "logout",
+		Description: "Logout of Toggl",
+		IsEnabled:   config.APIKey != "",
+		Arg: &alfred.ItemArg{
+			Keyword: "logout",
+			Mode:    alfred.ModeDo,
+		},
 	}
 }
 
-// Items returns a list of filter items
-func (c LogoutCommand) Items(args []string) ([]alfred.Item, error) {
-	return []alfred.Item{c.MenuItem()}, nil
-}
-
 // Do runs the command
-func (c LogoutCommand) Do(args []string) (out string, err error) {
+func (c LogoutCommand) Do(data string) (out string, err error) {
 	config.APIKey = ""
 	err = alfred.SaveJSON(configFile, &config)
 	if err != nil {

@@ -15,21 +15,16 @@ import (
 type ReportFilter struct{}
 
 // About returns information about a command
-func (c ReportFilter) About() *alfred.CommandDef {
-	return &alfred.CommandDef{
+func (c ReportFilter) About() alfred.CommandDef {
+	return alfred.CommandDef{
 		Keyword:     "report",
 		Description: "Generate summary reports",
-		WithSpace:   true,
+		IsEnabled:   config.APIKey != "",
 	}
 }
 
-// IsEnabled returns true if the command is enabled
-func (c ReportFilter) IsEnabled() bool {
-	return config.APIKey != ""
-}
-
 // Items returns a list of filter items
-func (c ReportFilter) Items(arg, data string) (items []*alfred.Item, err error) {
+func (c ReportFilter) Items(arg, data string) (items []alfred.Item, err error) {
 	if err = checkRefresh(); err != nil {
 		return
 	}
@@ -51,18 +46,18 @@ func (c ReportFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 		for _, value := range []string{"today", "yesterday", "week"} {
 			if alfred.FuzzyMatches(value, spanArg) {
 				span, _ := getSpan(value)
-				items = append(items, createReportMenuItem(&span))
+				items = append(items, createReportMenuItem(span))
 			}
 		}
 
 		if matched, _ := regexp.MatchString(`^\d`, spanArg); matched {
 			if span, err = getSpan(spanArg); err == nil {
-				items = append(items, createReportMenuItem(&span))
+				items = append(items, createReportMenuItem(span))
 			}
 		}
 
 		if len(items) == 0 {
-			items = append(items, &alfred.Item{
+			items = append(items, alfred.Item{
 				Title: "Enter a valid date or range",
 			})
 		}
@@ -70,7 +65,7 @@ func (c ReportFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 		return items, nil
 	}
 
-	var reportItems []*alfred.Item
+	var reportItems []alfred.Item
 	if reportItems, err = createReportItems(arg, data, &cfg, span); err != nil {
 		return
 	}
@@ -80,7 +75,7 @@ func (c ReportFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 	if len(items) == 0 {
 		cfg.Span = nil
 
-		item := &alfred.Item{
+		item := alfred.Item{
 			Title: "No time entries for " + span.Name,
 			Arg: &alfred.ItemArg{
 				Keyword: "report",
@@ -144,8 +139,8 @@ type summaryReport struct {
 	dates    map[string]*dateEntry
 }
 
-func createReportMenuItem(s *span) (item *alfred.Item) {
-	cfg := reportCfg{Span: s}
+func createReportMenuItem(s span) (item alfred.Item) {
+	cfg := reportCfg{Span: &s}
 
 	subtitle := "Generate a report for "
 	if s.Label != "" {
@@ -154,7 +149,7 @@ func createReportMenuItem(s *span) (item *alfred.Item) {
 		subtitle += s.Name
 	}
 
-	item = &alfred.Item{
+	item = alfred.Item{
 		Autocomplete: s.Name,
 		Title:        s.Name,
 		Subtitle:     subtitle,
@@ -167,7 +162,7 @@ func createReportMenuItem(s *span) (item *alfred.Item) {
 	if s.MultiDay {
 		grouping := groupByDay
 		cfg.Grouping = &grouping
-		item.AddMod(alfred.ModAlt, &alfred.ItemMod{
+		item.AddMod(alfred.ModAlt, alfred.ItemMod{
 			Subtitle: item.Subtitle + ", grouping entries by day",
 			Arg: &alfred.ItemArg{
 				Keyword: "report",
@@ -179,7 +174,7 @@ func createReportMenuItem(s *span) (item *alfred.Item) {
 	return
 }
 
-func createReportItems(arg, data string, cfg *reportCfg, span span) (items []*alfred.Item, err error) {
+func createReportItems(arg, data string, cfg *reportCfg, span span) (items []alfred.Item, err error) {
 	projectID := -1
 	if cfg.Project != nil {
 		projectID = *cfg.Project
@@ -231,7 +226,7 @@ func createReportItems(arg, data string, cfg *reportCfg, span span) (items []*al
 					dlog.Printf("Error getting span for %s: %v", date.name, e)
 				}
 
-				items = append(items, &alfred.Item{
+				items = append(items, alfred.Item{
 					Title:    dateName,
 					Subtitle: fmt.Sprintf("%.2f", float32(date.total)/100.0),
 					Arg: &alfred.ItemArg{
@@ -265,7 +260,7 @@ func createReportItems(arg, data string, cfg *reportCfg, span span) (items []*al
 					newCfg.EntryTitle = &entryTitle
 
 					if alfred.FuzzyMatches(entryTitle, arg) {
-						item := &alfred.Item{
+						item := alfred.Item{
 							Title:    entryTitle,
 							Subtitle: fmt.Sprintf("%.2f", float32(entry.total)/100.0),
 							Arg: &alfred.ItemArg{
@@ -297,7 +292,7 @@ func createReportItems(arg, data string, cfg *reportCfg, span span) (items []*al
 				dlog.Printf("checking if '%s' fuzzyMatches '%s'", arg, projectName)
 
 				if alfred.FuzzyMatches(projectName, arg) {
-					item := &alfred.Item{
+					item := alfred.Item{
 						Title:    projectName,
 						Subtitle: fmt.Sprintf("%.2f", float32(project.total)/100.0),
 						Arg: &alfred.ItemArg{
@@ -322,7 +317,7 @@ func createReportItems(arg, data string, cfg *reportCfg, span span) (items []*al
 	// Add the Total line at the top
 	if totalName != "" && arg == "" {
 		title := fmt.Sprintf("Total hours %s: %.2f", totalName, float32(total)/100.0)
-		item := &alfred.Item{
+		item := alfred.Item{
 			Title:    title,
 			Subtitle: alfred.Line,
 		}

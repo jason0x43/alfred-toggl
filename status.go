@@ -11,25 +11,20 @@ import (
 type StatusFilter struct{}
 
 // About returns information about this command
-func (c StatusFilter) About() *alfred.CommandDef {
-	return &alfred.CommandDef{
+func (c StatusFilter) About() alfred.CommandDef {
+	return alfred.CommandDef{
 		Keyword:     "status",
 		Description: "Show current status",
-		WithSpace:   false,
+		IsEnabled:   config.APIKey != "",
 	}
 }
 
-// IsEnabled returns true if the command is enabled
-func (c StatusFilter) IsEnabled() bool {
-	return true
-}
-
 // Items returns a list of filter items
-func (c StatusFilter) Items(arg, data string) (items []*alfred.Item, err error) {
+func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 	dlog.Printf("status items with arg=%s, data=%s", arg, data)
 
 	if err = refresh(); err != nil {
-		items = append(items, &alfred.Item{
+		items = append(items, alfred.Item{
 			Title:    "Error syncing with toggle.com",
 			Subtitle: fmt.Sprintf("%v", err),
 		})
@@ -49,7 +44,7 @@ func (c StatusFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 			subtitle = "[" + project.Name + "] " + subtitle
 		}
 
-		item := &alfred.Item{
+		item := alfred.Item{
 			Title:    entry.Description,
 			Subtitle: subtitle,
 			Icon:     "running.png",
@@ -59,7 +54,7 @@ func (c StatusFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 			},
 		}
 
-		item.AddMod(alfred.ModCmd, &alfred.ItemMod{
+		item.AddMod(alfred.ModCmd, alfred.ItemMod{
 			Subtitle: "Stop this timer",
 			Arg: &alfred.ItemArg{
 				Keyword: "timers",
@@ -70,7 +65,7 @@ func (c StatusFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 
 		items = append(items, item)
 	} else {
-		items = append(items, &alfred.Item{
+		items = append(items, alfred.Item{
 			Title: "No timers currently running",
 		})
 	}
@@ -79,7 +74,7 @@ func (c StatusFilter) Items(arg, data string) (items []*alfred.Item, err error) 
 	var report *summaryReport
 	report, err = generateReport(span.Start, span.End, -1, "")
 	for _, date := range report.dates {
-		items = append(items, &alfred.Item{
+		items = append(items, alfred.Item{
 			Title: fmt.Sprintf("Total time for today: %.2f", float32(date.total)/100.0),
 		})
 		break

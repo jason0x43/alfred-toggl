@@ -11,21 +11,16 @@ import (
 type ProjectCommand struct{}
 
 // About returns information about a command
-func (c ProjectCommand) About() *alfred.CommandDef {
-	return &alfred.CommandDef{
+func (c ProjectCommand) About() alfred.CommandDef {
+	return alfred.CommandDef{
 		Keyword:     "projects",
 		Description: "List your projects, add new ones",
-		WithSpace:   true,
+		IsEnabled:   config.APIKey != "",
 	}
 }
 
-// IsEnabled returns true if the command is enabled
-func (c ProjectCommand) IsEnabled() bool {
-	return config.APIKey != ""
-}
-
 // Items returns a list of filter items
-func (c ProjectCommand) Items(arg, data string) (items []*alfred.Item, err error) {
+func (c ProjectCommand) Items(arg, data string) (items []alfred.Item, err error) {
 	if err = checkRefresh(); err != nil {
 		return
 	}
@@ -57,7 +52,7 @@ func (c ProjectCommand) Items(arg, data string) (items []*alfred.Item, err error
 			if entry.IsActive() && alfred.FuzzyMatches(entry.Name, arg) {
 				projectCfg.Project = &entry.ID
 
-				item := &alfred.Item{
+				item := alfred.Item{
 					Title:        entry.Name,
 					Subtitle:     "",
 					Autocomplete: entry.Name,
@@ -78,7 +73,7 @@ func (c ProjectCommand) Items(arg, data string) (items []*alfred.Item, err error
 		if len(items) == 0 && arg != "" {
 			projectCfg.ToCreate = &createProjectMessage{Name: arg}
 
-			items = append(items, &alfred.Item{
+			items = append(items, alfred.Item{
 				Title:    arg,
 				Subtitle: "New project",
 				Arg: &alfred.ItemArg{
@@ -92,7 +87,7 @@ func (c ProjectCommand) Items(arg, data string) (items []*alfred.Item, err error
 		}
 
 		if len(items) == 0 {
-			items = append(items, &alfred.Item{Title: "No matching projects"})
+			items = append(items, alfred.Item{Title: "No matching projects"})
 		}
 	}
 
@@ -100,7 +95,7 @@ func (c ProjectCommand) Items(arg, data string) (items []*alfred.Item, err error
 }
 
 // Do runs the command
-func (c ProjectCommand) Do(arg, data string) (out string, err error) {
+func (c ProjectCommand) Do(data string) (out string, err error) {
 	var cfg projectCfg
 
 	if data != "" {
@@ -194,7 +189,7 @@ func updateProject(p *Project) (project Project, err error) {
 
 func projectItems(project Project, arg string) (items []alfred.Item, err error) {
 	if alfred.FuzzyMatches("name:", arg) {
-		item := &alfred.Item{}
+		item := alfred.Item{}
 		_, name := alfred.SplitCmd(arg)
 
 		if name != "" {
@@ -219,7 +214,7 @@ func projectItems(project Project, arg string) (items []alfred.Item, err error) 
 		if alfred.FuzzyMatches("Make default", arg) {
 			c := config
 			c.DefaultProjectID = project.ID
-			items = append(items, &alfred.Item{
+			items = append(items, alfred.Item{
 				Title:        "Make default",
 				Subtitle:     "Make this the default project",
 				Autocomplete: "Make default",
@@ -234,7 +229,7 @@ func projectItems(project Project, arg string) (items []alfred.Item, err error) 
 		if alfred.FuzzyMatches("Clear default", arg) {
 			c := config
 			c.DefaultProjectID = 0
-			items = append(items, &alfred.Item{
+			items = append(items, alfred.Item{
 				Title:        "Clear default",
 				Subtitle:     "Clear the default project",
 				Autocomplete: "Clear default",
@@ -248,7 +243,7 @@ func projectItems(project Project, arg string) (items []alfred.Item, err error) 
 	}
 
 	if alfred.FuzzyMatches("timers", arg) {
-		items = append(items, &alfred.Item{
+		items = append(items, alfred.Item{
 			Title:        "Time entries...",
 			Subtitle:     "List associated time entries",
 			Autocomplete: "Time entries...",

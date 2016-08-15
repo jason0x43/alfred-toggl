@@ -9,34 +9,21 @@ import (
 // ResetCommand is a command
 type ResetCommand struct{}
 
-// Keyword returns the command's keyword
-func (c ResetCommand) Keyword() string {
-	return "reset"
-}
-
-// IsEnabled returns true if the command is enabled
-func (c ResetCommand) IsEnabled() bool {
-	return config.APIKey != ""
-}
-
-// MenuItem returns the command's menu item
-func (c ResetCommand) MenuItem() alfred.Item {
-	return alfred.Item{
-		Title:        c.Keyword(),
-		Autocomplete: c.Keyword(),
-		Subtitle:     "Reset this workflow, erasing all local data",
+// About returns information about this command
+func (c ResetCommand) About() alfred.CommandDef {
+	return alfred.CommandDef{
+		Keyword:     "reset",
+		Description: "Reset this workflow, erasing all local data",
+		IsEnabled:   true,
+		Arg: &alfred.ItemArg{
+			Keyword: "reset",
+			Mode:    alfred.ModeDo,
+		},
 	}
 }
 
-// Items returns a list of filter items
-func (c ResetCommand) Items(args []string) ([]alfred.Item, error) {
-	item := c.MenuItem()
-	// item.Arg = "reset"
-	return []alfred.Item{item}, nil
-}
-
 // Do runs the command
-func (c ResetCommand) Do(args []string) (string, error) {
+func (c ResetCommand) Do(data string) (string, error) {
 	err1 := os.Remove(configFile)
 	err2 := os.Remove(cacheFile)
 

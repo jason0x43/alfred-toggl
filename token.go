@@ -9,33 +9,21 @@ import (
 // TokenCommand is a command
 type TokenCommand struct{}
 
-// Keyword returns the command's keyword
-func (c TokenCommand) Keyword() string {
-	return "token"
-}
-
-// IsEnabled returns true if the command is enabled
-func (c TokenCommand) IsEnabled() bool {
-	return config.APIKey == ""
-}
-
-// MenuItem returns the command's menu item
-func (c TokenCommand) MenuItem() alfred.Item {
-	return alfred.Item{
-		Title:        c.Keyword(),
-		Autocomplete: c.Keyword(),
-		// Arg:          "token",
-		Subtitle: "Manually enter toggl.com API token",
+// About returns information about this command
+func (c TokenCommand) About() alfred.CommandDef {
+	return alfred.CommandDef{
+		Keyword:     "token",
+		Description: "Manually enter a Toggl API token",
+		IsEnabled:   config.APIKey == "",
+		Arg: &alfred.ItemArg{
+			Keyword: "token",
+			Mode:    alfred.ModeDo,
+		},
 	}
 }
 
-// Items returns a list of filter items
-func (c TokenCommand) Items(args []string) ([]alfred.Item, error) {
-	return []alfred.Item{c.MenuItem()}, nil
-}
-
 // Do runs the command
-func (c TokenCommand) Do(args []string) (string, error) {
+func (c TokenCommand) Do(data string) (string, error) {
 	btn, token, err := workflow.GetInput("API token", "", false)
 	if err != nil {
 		return "", err

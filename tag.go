@@ -13,22 +13,17 @@ import (
 // TagCommand is a command
 type TagCommand struct{}
 
-// IsEnabled returns true if the command is enabled
-func (c TagCommand) IsEnabled() bool {
-	return config.APIKey != ""
-}
-
 // About returns information about this command
-func (c TagCommand) About() *alfred.CommandDef {
-	return &alfred.CommandDef{
+func (c TagCommand) About() alfred.CommandDef {
+	return alfred.CommandDef{
 		Keyword:     "tag",
 		Description: "List your tags",
-		WithSpace:   true,
+		IsEnabled:   config.APIKey != "",
 	}
 }
 
 // Items returns a list of filter items
-func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
+func (c TagCommand) Items(arg, data string) (items []alfred.Item, err error) {
 	dlog.Printf("getting tag items")
 	if err = checkRefresh(); err != nil {
 		return
@@ -40,7 +35,7 @@ func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 	if len(parts) > 1 {
 		tag, found := findTagByName(parts[0])
 		if !found {
-			items = append(items, &alfred.Item{Title: "Invalid tag '" + parts[0] + "'"})
+			items = append(items, alfred.Item{Title: "Invalid tag '" + parts[0] + "'"})
 		}
 
 		subcommand := parts[1]
@@ -50,12 +45,12 @@ func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 			// list time entries with this tag
 			entries := getLatestTimeEntriesForTag(tag.Name)
 			if len(entries) == 0 {
-				items = append(items, &alfred.Item{
+				items = append(items, alfred.Item{
 					Title: "No time entries",
 				})
 			} else {
 				for _, entry := range entries {
-					items = append(items, &alfred.Item{
+					items = append(items, alfred.Item{
 						Title: entry.Description,
 					})
 				}
@@ -71,13 +66,13 @@ func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 				// dataString, _ := json.Marshal(updateTag)
 				// arg = "update-tag " + string(dataString)
 			}
-			items = append(items, &alfred.Item{
+			items = append(items, alfred.Item{
 				Title: "name: " + name,
 				// Arg:   arg,
 			})
 		default:
 			if alfred.FuzzyMatches("name", subcommand) {
-				items = append(items, &alfred.Item{
+				items = append(items, alfred.Item{
 					Title:        "name: " + tag.Name,
 					Autocomplete: "name" + " ",
 				})
@@ -89,7 +84,7 @@ func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 				} else {
 					title += "<None>"
 				}
-				items = append(items, &alfred.Item{
+				items = append(items, alfred.Item{
 					Title:        title,
 					Autocomplete: "timers",
 				})
@@ -98,7 +93,7 @@ func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 				// data := deleteMessage{Type: "tag", ID: tag.ID}
 				// dataString, _ := json.Marshal(data)
 
-				items = append(items, &alfred.Item{
+				items = append(items, alfred.Item{
 					Title:        "delete",
 					Autocomplete: "delete",
 					// Arg:          "delete " + string(dataString),
@@ -108,7 +103,7 @@ func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 	} else {
 		for _, entry := range cache.Account.Data.Tags {
 			if alfred.FuzzyMatches(entry.Name, arg) {
-				items = append(items, &alfred.Item{
+				items = append(items, alfred.Item{
 					Title:        entry.Name,
 					Autocomplete: entry.Name + " ",
 				})
@@ -119,7 +114,7 @@ func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 			// data := createTagMessage{Name: parts[0]}
 			// dataString, _ := json.Marshal(data)
 
-			items = append(items, &alfred.Item{
+			items = append(items, alfred.Item{
 				Title:    parts[0],
 				Subtitle: "New tag",
 				// Arg:      "create-tag " + string(dataString),
@@ -131,7 +126,7 @@ func (c TagCommand) Items(arg, data string) (items []*alfred.Item, err error) {
 }
 
 // Do runs the command
-func (c TagCommand) Do(arg, data string) (out string, err error) {
+func (c TagCommand) Do(data string) (out string, err error) {
 	var cfg tagCfg
 
 	if data != "" {

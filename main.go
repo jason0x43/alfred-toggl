@@ -24,26 +24,22 @@ var config struct {
 }
 var cache struct {
 	Workspace int
-	Account   toggl.Account
+	Account   Account
 	Time      time.Time
 }
-var workflow *alfred.Workflow
+var workflow alfred.Workflow
 
 func main() {
-	var err error
-
 	if !alfred.IsDebugging() {
 		dlog.SetOutput(ioutil.Discard)
 		dlog.SetFlags(0)
 	}
 
-	workflow, err = alfred.OpenWorkflow(".", true)
-	if err != nil {
+	var err error
+	if workflow, err = alfred.OpenWorkflow(".", true); err != nil {
 		fmt.Printf("Error: %s", err)
 		os.Exit(1)
 	}
-
-	toggl.AppName = "alfred-toggl"
 
 	configFile = path.Join(workflow.DataDir(), "config.json")
 	cacheFile = path.Join(workflow.CacheDir(), "cache.json")
@@ -51,27 +47,24 @@ func main() {
 	dlog.Printf("Using config file: %s", configFile)
 	dlog.Printf("Using cache file: %s", cacheFile)
 
-	err = alfred.LoadJSON(configFile, &config)
-	if err != nil {
+	if err := alfred.LoadJSON(configFile, &config); err != nil {
 		dlog.Println("Error loading config:", err)
 	}
-	dlog.Printf("loaded config")
 
-	err = alfred.LoadJSON(cacheFile, &cache)
-	dlog.Println("loaded cache")
+	if err := alfred.LoadJSON(cacheFile, &cache); err != nil {
+		dlog.Println("Error loading config:", err)
+	}
 
-	commands := []alfred.Command{
+	workflow.Run([]alfred.Command{
 		StatusFilter{},
-		// LoginCommand{},
-		// TokenCommand{},
+		LoginCommand{},
+		TokenCommand{},
 		TimeEntryCommand{},
 		ProjectCommand{},
 		TagCommand{},
 		ReportFilter{},
 		OptionsCommand{},
-		// LogoutCommand{},
-		// ResetCommand{},
-	}
-
-	workflow.Run(commands)
+		LogoutCommand{},
+		ResetCommand{},
+	})
 }

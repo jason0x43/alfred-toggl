@@ -18,23 +18,18 @@ import (
 type TimeEntryCommand struct{}
 
 // About returns information about a command
-func (c TimeEntryCommand) About() *alfred.CommandDef {
-	return &alfred.CommandDef{
+func (c TimeEntryCommand) About() alfred.CommandDef {
+	return alfred.CommandDef{
 		Keyword:     "timers",
 		Description: "List and modify recent time entries, add new ones",
-		WithSpace:   true,
+		IsEnabled:   config.APIKey != "",
 	}
 }
 
-// IsEnabled returns true if the command is enabled
-func (c TimeEntryCommand) IsEnabled() bool {
-	return config.APIKey != ""
-}
-
 // Items returns a list of filter items
-func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err error) {
+func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err error) {
 	if err = checkRefresh(); err != nil {
-		return items, err
+		return
 	}
 
 	pid := -1
@@ -62,7 +57,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 			for _, proj := range cache.Account.Data.Projects {
 				if proj.IsActive() && alfred.FuzzyMatches(proj.Name, arg) {
 					toStart.Pid = proj.ID
-					item := &alfred.Item{
+					item := alfred.Item{
 						Title:        proj.Name,
 						Autocomplete: proj.Name,
 						Arg: &alfred.ItemArg{
@@ -127,7 +122,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 				subtitle += " in " + project.Name
 			}
 
-			item := &alfred.Item{
+			item := alfred.Item{
 				Title:    arg,
 				Subtitle: subtitle,
 				Arg: &alfred.ItemArg{
@@ -137,7 +132,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 				},
 			}
 
-			item.AddMod(alfred.ModAlt, &alfred.ItemMod{
+			item.AddMod(alfred.ModAlt, alfred.ItemMod{
 				Subtitle: "Choose project...",
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
@@ -151,7 +146,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 		sort.Sort(sort.Reverse(byTime(filtered)))
 
 		for _, entry := range filtered {
-			item := &alfred.Item{
+			item := alfred.Item{
 				Title:        entry.Description,
 				Autocomplete: entry.Description,
 				Arg: &alfred.ItemArg{
@@ -167,7 +162,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 				modTitle = "Start this timer"
 			}
 
-			item.AddMod(alfred.ModCmd, &alfred.ItemMod{
+			item.AddMod(alfred.ModCmd, alfred.ItemMod{
 				Subtitle: modTitle,
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
@@ -212,7 +207,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 
 	if pid != -1 && arg == "" {
 		project, _, _ := getProjectByID(pid)
-		items = alfred.InsertItem(items, &alfred.Item{
+		items = alfred.InsertItem(items, alfred.Item{
 			Title:    fmt.Sprintf("%s time entries", project.Name),
 			Subtitle: alfred.Line,
 			Arg: &alfred.ItemArg{
@@ -226,7 +221,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []*alfred.Item, err err
 }
 
 // Do runs the command
-func (c TimeEntryCommand) Do(arg, data string) (out string, err error) {
+func (c TimeEntryCommand) Do(data string) (out string, err error) {
 	var cfg timerCfg
 
 	if data != "" {
@@ -237,8 +232,8 @@ func (c TimeEntryCommand) Do(arg, data string) (out string, err error) {
 
 	if cfg.ToUpdate != nil {
 		dlog.Printf("updating time entry %v", cfg.ToUpdate)
-		if timer, err = updateTimeEntry(cfg.ToUpdate); err != nil {
 		var timer TimeEntry
+		if timer, err = updateTimeEntry(*cfg.ToUpdate); err != nil {
 			return
 		}
 		return fmt.Sprintf(`Updated time entry "%s"`, timer.Description), nil
@@ -280,13 +275,13 @@ func (c TimeEntryCommand) Do(arg, data string) (out string, err error) {
 // support -------------------------------------------------------------------
 
 type timerCfg struct {
-	Timer    *int             `json:"timer,omitempty"`
-	Property *string          `json:"property,omitempty"`
-	Project  *int             `json:"project,omitempty"`
-	ToStart  *startDesc       `json:"tostart,omitempty"`
-	ToDelete *int             `json:"todelete,omitempty"`
-	ToToggle *int             `json:"totoggle,omitempty"`
+	Timer    *int       `json:"timer,omitempty"`
+	Property *string    `json:"property,omitempty"`
+	Project  *int       `json:"project,omitempty"`
+	ToStart  *startDesc `json:"tostart,omitempty"`
 	ToUpdate *TimeEntry `json:"toupdate,omitempty"`
+	ToDelete *int       `json:"todelete,omitempty"`
+	ToToggle *int       `json:"totoggle,omitempty"`
 }
 
 type startDesc struct {
@@ -387,7 +382,7 @@ func toggleTimeEntry(toToggle int) (updatedEntry TimeEntry, err error) {
 func updateTimeEntry(entryIn TimeEntry) (entry TimeEntry, err error) {
 	session := OpenSession(config.APIKey)
 
-	if entry, err = session.UpdateTimeEntry(*entryIn); err != nil {
+	if entry, err = session.UpdateTimeEntry(entryIn); err != nil {
 		return
 	}
 
@@ -421,8 +416,10 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 
 		if len(parts) > 1 {
 			newDesc := parts[1]
-			updateEntry := *entry
+
+			updateEntry := entry.Copy()
 			updateEntry.Description = newDesc
+
 			item.Title = "Description: " + newDesc
 			item.Subtitle = "Description: " + entry.Description
 			item.Arg = &alfred.ItemArg{
@@ -436,7 +433,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 			item.Autocomplete = "Description: " + entry.Description
 		}
 
-		items = append(items, &item)
+		items = append(items, item)
 	}
 
 	if alfred.FuzzyMatches("project:", parts[0]) {
@@ -451,13 +448,13 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 
 			for _, proj := range cache.Account.Data.Projects {
 				if proj.IsActive() && alfred.FuzzyMatches(proj.Name, name) {
-					updateEntry := *entry
+					updateEntry := entry.Copy()
 					if entry.Pid == proj.ID {
 						updateEntry.Pid = 0
 					} else {
 						updateEntry.Pid = proj.ID
 					}
-					item := &alfred.Item{
+					item := alfred.Item{
 						Title:        proj.Name,
 						Autocomplete: command + ": " + proj.Name,
 						Arg: &alfred.ItemArg{
@@ -471,7 +468,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				}
 			}
 		} else {
-			item := &alfred.Item{
+			item := alfred.Item{
 				Title:        command + ": ",
 				Subtitle:     "Change the project this entry is assigned to",
 				Autocomplete: command + ": ",
@@ -497,7 +494,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 
 			for _, tag := range cache.Account.Data.Tags {
 				if alfred.FuzzyMatches(tag.Name, tagName) {
-					item := &alfred.Item{
+					item := alfred.Item{
 						Title:        tag.Name,
 						Autocomplete: tag.Name,
 					}
@@ -520,7 +517,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				}
 			}
 		} else {
-			item := &alfred.Item{
+			item := alfred.Item{
 				Title:        command + ": ",
 				Subtitle:     "Update tags",
 				Autocomplete: command + ": ",
@@ -542,14 +539,10 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 			startTime = entry.StartTime().Local().Format("15:04")
 		}
 
-		item := &alfred.Item{
+		item := alfred.Item{
 			Title:        command + ": " + startTime,
 			Autocomplete: command + ": ",
 			Subtitle:     "Change the start time",
-		}
-
-		if strings.ToLower(parts[0]) == "start:" {
-			item.Subtitle = "Change start time"
 		}
 
 		if len(parts) > 1 {
@@ -559,6 +552,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				newStart := getNewTime(entry.StartTime().Local(), newTime)
 
 				updateTimer := entry.Copy()
+				updateTimer.Start = &newStart
 
 				if !entry.IsRunning() {
 					updateTimer.Duration = entry.Duration
@@ -589,14 +583,10 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				stopTime = entry.StopTime().Local().Format("15:04")
 			}
 
-			item := &alfred.Item{
+			item := alfred.Item{
 				Title:        command + ": " + stopTime,
 				Autocomplete: command + ": ",
 				Subtitle:     "Change the stop time",
-			}
-
-			if strings.ToLower(parts[0]) == "stop:" {
-				item.Subtitle = "Change stop time"
 			}
 
 			if len(parts) > 1 {
@@ -606,12 +596,14 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 					newStop := getNewTime(entry.StopTime().Local(), newTime)
 
 					updateTimer := entry.Copy()
+					updateTimer.Stop = &newStop
 
 					item.Title = command + ": " + timeStr
 					item.Subtitle = "Press enter to change start time (end time will also be adjusted)"
 					item.Arg = &alfred.ItemArg{
 						Keyword: "timers",
-						Data:    alfred.Stringify(updateTimer),
+						Mode:    alfred.ModeDo,
+						Data:    alfred.Stringify(timerCfg{ToUpdate: &updateTimer}),
 					}
 				} else {
 					dlog.Printf("Invalid time: %s\n", timeStr)
@@ -626,7 +618,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 			parts := alfred.CleanSplitN(query, " ", 2)
 			duration := float32(entry.Duration) / 60.0 / 60.0
 
-			item := &alfred.Item{
+			item := alfred.Item{
 				Title:        fmt.Sprintf("%s: %.2f", command, duration),
 				Autocomplete: command + ": ",
 				Subtitle:     "Change the duration",
@@ -634,9 +626,11 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 
 			// Add an option to round the duration down to a time increment
 			roundedDuration := float32(roundDuration(entry.Duration, true)) / 100
-			item.AddMod(alfred.ModAlt, &alfred.ItemMod{
+
 			updateTimer := entry.Copy()
 			updateTimer.Duration = int64(roundedDuration * 60 * 60)
+
+			item.AddMod(alfred.ModAlt, alfred.ItemMod{
 				Subtitle: fmt.Sprintf("Round down to %.2f", roundedDuration),
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
@@ -666,10 +660,10 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 			items = append(items, item)
 		}
 
-		if alfred.FuzzyMatches("start", query) {
-			items = append(items, &alfred.Item{
-				Title:    "Start",
-				Subtitle: "Start this time entry",
+		if alfred.FuzzyMatches("continue", query) {
+			items = append(items, alfred.Item{
+				Title:    "Continue",
+				Subtitle: "Continue this time entry",
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
@@ -680,7 +674,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 		}
 	} else {
 		if alfred.FuzzyMatches("stop", query) {
-			items = append(items, &alfred.Item{
+			items = append(items, alfred.Item{
 				Title:    "Stop",
 				Subtitle: "Stop this time entry",
 				Arg: &alfred.ItemArg{
@@ -694,7 +688,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 	}
 
 	if alfred.FuzzyMatches("delete", query) {
-		items = append(items, &alfred.Item{
+		items = append(items, alfred.Item{
 			Title:    "Delete",
 			Subtitle: "Delete this time entry",
 			Arg: &alfred.ItemArg{

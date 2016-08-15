@@ -13,24 +13,17 @@ import (
 // OptionsCommand is a command
 type OptionsCommand struct{}
 
-var optionsDef = alfred.CommandDef{
-	Keyword:     "options",
-	Description: "Sets options",
-	WithSpace:   true,
-}
-
 // About returns information about a command
-func (c OptionsCommand) About() *alfred.CommandDef {
-	return &optionsDef
-}
-
-// IsEnabled returns true if the command is enabled
-func (c OptionsCommand) IsEnabled() bool {
-	return config.APIKey != ""
+func (c OptionsCommand) About() alfred.CommandDef {
+	return alfred.CommandDef{
+		Keyword:     "options",
+		Description: "Sets options",
+		IsEnabled:   config.APIKey != "",
+	}
 }
 
 // Items returns a list of filter items
-func (c OptionsCommand) Items(arg, data string) (items []*alfred.Item, err error) {
+func (c OptionsCommand) Items(arg, data string) (items []alfred.Item, err error) {
 	ct := reflect.TypeOf(config)
 	cfg := reflect.Indirect(reflect.ValueOf(config))
 
@@ -46,7 +39,7 @@ func (c OptionsCommand) Items(arg, data string) (items []*alfred.Item, err error
 			continue
 		}
 
-		item := &alfred.Item{
+		item := alfred.Item{
 			Title:        field.Name + ": ",
 			Subtitle:     desc,
 			Autocomplete: field.Name,
@@ -105,9 +98,7 @@ func (c OptionsCommand) Items(arg, data string) (items []*alfred.Item, err error
 }
 
 // Do runs the command
-func (c OptionsCommand) Do(arg, data string) (out string, err error) {
-	log.Printf("options '%s'", arg)
-
+func (c OptionsCommand) Do(data string) (out string, err error) {
 	if err = json.Unmarshal([]byte(data), &config); err != nil {
 		return
 	}

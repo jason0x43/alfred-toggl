@@ -5,36 +5,23 @@ import "github.com/jason0x43/go-alfred"
 // LoginCommand is a command
 type LoginCommand struct{}
 
-// Keyword returns the command's keyword
-func (c LoginCommand) Keyword() string {
-	return "login"
-}
-
-// IsEnabled returns true if the command is enabled
-func (c LoginCommand) IsEnabled() bool {
-	return config.APIKey == ""
-}
-
-// MenuItem returns the command's menu item
-func (c LoginCommand) MenuItem() alfred.Item {
-	return alfred.Item{
-		Title:        c.Keyword(),
-		Autocomplete: c.Keyword(),
-		// Arg:          "login",
-		Subtitle: "Login to toggl.com",
+// About returns information about this command
+func (c LoginCommand) About() alfred.CommandDef {
+	return alfred.CommandDef{
+		Keyword:     "login",
+		Description: "Login to Toggl",
+		IsEnabled:   config.APIKey == "",
+		Arg: &alfred.ItemArg{
+			Keyword: "login",
+			Mode:    alfred.ModeDo,
+		},
 	}
 }
 
-// Items returns a list of filter items
-func (c LoginCommand) Items(args []string) ([]alfred.Item, error) {
-	return []alfred.Item{c.MenuItem()}, nil
-}
-
 // Do runs the command
-func (c LoginCommand) Do(args []string) (out string, err error) {
+func (c LoginCommand) Do(data string) (out string, err error) {
 	var btn, username string
-	btn, username, err = workflow.GetInput("Email address", "", false)
-	if err != nil {
+	if btn, username, err = workflow.GetInput("Email address", "", false); err != nil {
 		return
 	}
 
@@ -45,22 +32,20 @@ func (c LoginCommand) Do(args []string) (out string, err error) {
 	dlog.Printf("username: %s", username)
 
 	var password string
-	btn, password, err = workflow.GetInput("Password", "", true)
-	if btn != "Ok" {
+	if btn, password, err = workflow.GetInput("Password", "", true); btn != "Ok" {
 		dlog.Println("User didn't click OK")
 		return
 	}
 	dlog.Printf("password: *****")
 
-	session, err = toggl.NewSession(username, password)
-	if err != nil {
 	var session Session
+	if session, err = NewSession(username, password); err != nil {
+		workflow.ShowMessage("Login failed!")
 		return
 	}
 
 	config.APIKey = session.APIToken
-	err = alfred.SaveJSON(configFile, &config)
-	if err != nil {
+	if err = alfred.SaveJSON(configFile, &config); err != nil {
 		return
 	}
 
