@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"sort"
 	"strings"
@@ -265,6 +266,25 @@ func roundDuration(duration int64, floor bool) int64 {
 	return int64(hours * 100)
 }
 
+// formatTime formats a duration in hours*100 (the return value of
+// roundDuration) according to the current configured format (fractional time
+// or hh:mm)
+func formatDuration(hoursTimes100 int64) string {
+	if config.HoursMinutes {
+		hours := float64(hoursTimes100) / 100.0
+		wholeHours := int64(hours)
+		minutes := round((hours - float64(wholeHours)) * 60.0)
+		return fmt.Sprintf("%d:%02d", wholeHours, minutes)
+	}
+
+	return fmt.Sprintf("%.2f", float64(hoursTimes100)/100.0)
+}
+
+// round rounds a float64, returning an int64
+func round(value float64) int64 {
+	return int64(math.Floor(value + 0.5))
+}
+
 type byTime []TimeEntry
 
 func (b byTime) Len() int {
@@ -286,7 +306,7 @@ func (b byTime) Less(i, j int) bool {
 }
 
 type matchEntry struct {
-	portion  float32
+	portion  float64
 	start    int
 	title    string
 	subtitle string

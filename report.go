@@ -228,7 +228,7 @@ func createReportItems(arg, data string, cfg *reportCfg, span span) (items []alf
 
 				items = append(items, alfred.Item{
 					Title:    dateName,
-					Subtitle: fmt.Sprintf("%.2f", float32(date.total)/100.0),
+					Subtitle: formatDuration(date.total),
 					Arg: &alfred.ItemArg{
 						Keyword: "report",
 						Data:    alfred.Stringify(&newCfg),
@@ -262,7 +262,7 @@ func createReportItems(arg, data string, cfg *reportCfg, span span) (items []alf
 					if alfred.FuzzyMatches(entryTitle, arg) {
 						item := alfred.Item{
 							Title:    entryTitle,
-							Subtitle: fmt.Sprintf("%.2f", float32(entry.total)/100.0),
+							Subtitle: formatDuration(entry.total),
 							Arg: &alfred.ItemArg{
 								Keyword: "report",
 								Data:    alfred.Stringify(&newCfg),
@@ -294,7 +294,7 @@ func createReportItems(arg, data string, cfg *reportCfg, span span) (items []alf
 				if alfred.FuzzyMatches(projectName, arg) {
 					item := alfred.Item{
 						Title:    projectName,
-						Subtitle: fmt.Sprintf("%.2f", float32(project.total)/100.0),
+						Subtitle: formatDuration(project.total),
 						Arg: &alfred.ItemArg{
 							Keyword: "report",
 							Data:    alfred.Stringify(&newCfg),
@@ -316,7 +316,7 @@ func createReportItems(arg, data string, cfg *reportCfg, span span) (items []alf
 
 	// Add the Total line at the top
 	if totalName != "" && arg == "" {
-		title := fmt.Sprintf("Total hours %s: %.2f", totalName, float32(total)/100.0)
+		title := fmt.Sprintf("Total time %s: %s", totalName, formatDuration(total))
 		item := alfred.Item{
 			Title:    title,
 			Subtitle: alfred.Line,
@@ -449,7 +449,7 @@ func generateReport(since, until time.Time, projectID int, entryTitle string) (*
 			duration := entry.Duration
 
 			if duration < 0 {
-				duration = int64(time.Now().Sub(entry.StartTime()).Seconds())
+				duration = round(time.Now().Sub(entry.StartTime()).Seconds())
 				project.running = true
 			}
 

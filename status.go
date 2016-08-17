@@ -33,12 +33,12 @@ func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 
 	if entry, found := getRunningTimer(); found {
 		startTime := entry.StartTime().Local()
-		seconds := int64(time.Now().Sub(startTime).Seconds())
-		duration := float32(seconds) / float32(60*60)
+		seconds := round(time.Now().Sub(startTime).Seconds())
+		duration := float64(seconds) / float64(60*60)
 		date := toHumanDateString(startTime)
 		time := startTime.Format("15:04:05")
-		subtitle := fmt.Sprintf("%.2f hr, started %s at %s", duration, date,
-			time)
+		subtitle := fmt.Sprintf("%s, started %s at %s",
+			formatDuration(round(duration*100.0)), date, time)
 
 		if project, _, ok := getProjectByID(entry.Pid); ok {
 			subtitle = "[" + project.Name + "] " + subtitle
@@ -75,7 +75,7 @@ func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 	report, err = generateReport(span.Start, span.End, -1, "")
 	for _, date := range report.dates {
 		items = append(items, alfred.Item{
-			Title: fmt.Sprintf("Total time for today: %.2f", float32(date.total)/100.0),
+			Title: fmt.Sprintf("Total time for today: %s", formatDuration(date.total)),
 		})
 		break
 	}

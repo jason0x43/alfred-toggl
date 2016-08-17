@@ -40,19 +40,19 @@ func (c OptionsCommand) Items(arg, data string) (items []alfred.Item, err error)
 		}
 
 		item := alfred.Item{
-			Title:        field.Name + ": ",
+			Title:        field.Name,
 			Subtitle:     desc,
 			Autocomplete: field.Name,
-			Arg: &alfred.ItemArg{
-				Keyword: "options",
-				Mode:    alfred.ModeDo,
-			},
+		}
+
+		itemArg := &alfred.ItemArg{
+			Keyword: "options",
+			Mode:    alfred.ModeDo,
 		}
 
 		switch field.Type.Name() {
 		case "bool":
 			f := cfg.FieldByName(field.Name)
-			item.Title += fmt.Sprintf("%v", f.Bool())
 			if name == field.Name {
 				item.Title += " (press Enter to toggle)"
 			}
@@ -62,7 +62,9 @@ func (c OptionsCommand) Items(arg, data string) (items []alfred.Item, err error)
 			o := reflect.Indirect(reflect.ValueOf(&opts))
 			newVal := !f.Bool()
 			o.FieldByName(field.Name).SetBool(newVal)
+			item.Arg = itemArg
 			item.Arg.Data = alfred.Stringify(opts)
+			item.AddCheckBox(f.Bool())
 		case "int":
 			item.Autocomplete += " "
 
@@ -71,17 +73,18 @@ func (c OptionsCommand) Items(arg, data string) (items []alfred.Item, err error)
 				if err != nil {
 					return items, err
 				}
-				item.Title += fmt.Sprintf("%d", val)
+				item.Title += fmt.Sprintf(": %d", val)
 
 				// copy the current options, update them, and use as the arg
 				opts := config
 				o := reflect.Indirect(reflect.ValueOf(&opts))
 				o.FieldByName(field.Name).SetInt(int64(val))
+				item.Arg = itemArg
 				item.Arg.Data = alfred.Stringify(opts)
 			} else {
 				f := cfg.FieldByName(field.Name)
 				val := f.Int()
-				item.Title += fmt.Sprintf("%v", val)
+				item.Title += fmt.Sprintf(": %v", val)
 				if name == field.Name {
 					item.Title += " (type a new value to change)"
 				}
@@ -89,7 +92,7 @@ func (c OptionsCommand) Items(arg, data string) (items []alfred.Item, err error)
 		case "string":
 			f := cfg.FieldByName(field.Name)
 			item.Autocomplete += " "
-			item.Title += f.String()
+			item.Title += ": " + f.String()
 		}
 
 		items = append(items, item)

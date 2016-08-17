@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -185,14 +186,14 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 
 			startTime := entry.StartTime()
 			if entry.Duration < 0 {
-				seconds = int64(time.Now().Sub(startTime).Seconds())
+				seconds = round(time.Now().Sub(startTime).Seconds())
 			} else {
 				seconds = entry.Duration
 			}
 
 			duration := float64(seconds) / 3600.0
 
-			item.Subtitle = fmt.Sprintf("%.2f, %s from %s to ", duration,
+			item.Subtitle = fmt.Sprintf("%s, %s from %s to ", formatDuration(round(duration*100.0)),
 				toHumanDateString(startTime), startTime.Local().Format("3:04pm"))
 
 			if entry.Duration < 0 {
@@ -630,22 +631,29 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 
 		if alfred.FuzzyMatches("duration:", parts[0]) {
 			command := "Duration"
-			duration := float32(entry.Duration) / 60.0 / 60.0
+			duration := float64(entry.Duration) / 60.0 / 60.0
 
 			item := alfred.Item{
-				Title:        fmt.Sprintf("%s: %.2f", command, duration),
+				Title:        fmt.Sprintf("%s: %s", command, formatDuration(round(duration*100.0))),
 				Autocomplete: command + ": ",
-				Subtitle:     "Set the duration (in hours)",
+				Subtitle:     "Set the duration",
+			}
+
+			if config.HoursMinutes {
+				item.Subtitle += " (in hh:mm)"
+			} else {
+				item.Subtitle += " (in hours)"
 			}
 
 			// Add an option to round the duration down to a time increment
-			roundedDuration := float32(roundDuration(entry.Duration, true)) / 100
+			roundedDuration := float64(roundDuration(entry.Duration, true)) / 100
+			dlog.Printf("Rounded duration: %f", roundedDuration)
 
 			updateTimer := entry.Copy()
-			updateTimer.SetDuration(int64(roundedDuration * 60 * 60))
+			updateTimer.SetDuration(round(roundedDuration * 60 * 60))
 
 			item.AddMod(alfred.ModAlt, alfred.ItemMod{
-				Subtitle: fmt.Sprintf("Round down to %.2f", roundedDuration),
+				Subtitle: fmt.Sprintf("Round down to %s", formatDuration(round(roundedDuration*100.0))),
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
@@ -661,9 +669,34 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 
 			if len(parts) > 1 {
 				newDuration := parts[1]
-				if val, err := strconv.ParseFloat(newDuration, 64); err == nil {
-					updateTimer.SetDuration(int64(val * 60 * 60))
-					item.Title = fmt.Sprintf("%s: %.2f", command, val)
+				var val float64
+
+				if config.HoursMinutes {
+					timeFormat := regexp.MustCompile(`^\d+(:(\d\d?)?)?$`)
+					if !timeFormat.MatchString(newDuration) {
+						err = fmt.Errorf("Invalid time %s", newDuration)
+					}
+
+					if err == nil {
+						subParts := alfred.CleanSplitN(newDuration, ":", 2)
+						var hours int64
+						var minutes int64
+
+						hours, _ = strconv.ParseInt(subParts[0], 10, 64)
+
+						if len(subParts) > 1 {
+							minutes, _ = strconv.ParseInt(subParts[1], 10, 64)
+						}
+
+						val = float64(hours) + float64(minutes)/60.0
+					}
+				} else {
+					val, err = strconv.ParseFloat(newDuration, 64)
+				}
+
+				if err == nil {
+					updateTimer.SetDuration(round(val * 60 * 60))
+					item.Title = fmt.Sprintf("%s: %s", command, formatDuration(round(val*100.0)))
 					item.Subtitle = "Press enter to change duration (end time will be adjusted)"
 					item.Arg = &alfred.ItemArg{
 						Keyword: "timers",
