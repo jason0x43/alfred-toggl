@@ -483,6 +483,8 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 					items = append(items, item)
 				}
 			}
+
+			alfred.FuzzySort(items, name)
 		} else {
 			item := alfred.Item{
 				Title:        command + ": ",
