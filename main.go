@@ -19,7 +19,8 @@ var config struct {
 	APIKey           string `desc:"Toggl API key"`
 	DurationOnly     bool   `desc:"Extend time entries instead of creating new ones."`
 	Rounding         int    `desc:"Minutes to round to, 0 to disable rounding."`
-	DefaultProjectID int    `desc:"Optional default project ID; set to 0 to clear"`
+	DefaultProjectID int    `desc:"Optional default project ID for new time entries; set to 0 to clear"`
+	AskForProject    bool   `desc:"If true, ask for a project if a default isn't set"`
 	TestMode         bool   `desc:"If true, disable auto refresh"`
 }
 var cache struct {

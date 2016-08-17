@@ -76,13 +76,6 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 
 	var entries []TimeEntry
 
-	if pid == -1 {
-		// If the user didn't specify a PID, use the default one
-		if config.DefaultProjectID != 0 {
-			pid = config.DefaultProjectID
-		}
-	}
-
 	if tid != -1 {
 		// Do someting with a specific time entry
 		if entry, _, ok := getTimerByID(tid); ok {
@@ -111,6 +104,10 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 		if arg != "" {
 			// Arg is the new project's description
 
+			if pid == -1 && config.DefaultProjectID != 0 {
+				pid = config.DefaultProjectID
+			}
+
 			newTimer := startDesc{Description: arg}
 			if pid != -1 {
 				newTimer.Pid = pid
@@ -122,20 +119,33 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 				subtitle += " in " + project.Name
 			}
 
+			defaultMode := alfred.ModeDo
+			altMode := alfred.ModeTell
+			altTitle := "Choose project..."
+
+			if pid == -1 && config.AskForProject {
+				defaultMode, altMode = altMode, defaultMode
+				altTitle = "Use default (or no) project"
+				subtitle += ", press Enter to choose a project"
+			}
+
 			item := alfred.Item{
 				Title:    arg,
 				Subtitle: subtitle,
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
-					Mode:    alfred.ModeDo,
+					Mode:    defaultMode,
 					Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
 				},
 			}
 
+			newTimer.Pid = 0
+
 			item.AddMod(alfred.ModAlt, alfred.ItemMod{
-				Subtitle: "Choose project...",
+				Subtitle: altTitle,
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
+					Mode:    altMode,
 					Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
 				},
 			})
