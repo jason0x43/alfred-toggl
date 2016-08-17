@@ -452,6 +452,45 @@ func (e *TimeEntry) RemoveTag(tag string) {
 	}
 }
 
+// SetDuration sets a time entry's duration. The duration should be a value in
+// seconds. The stop time will also be updated. Note that the time entry must
+// not be running.
+func (e *TimeEntry) SetDuration(duration int64) error {
+	if e.IsRunning() {
+		return fmt.Errorf("TimeEntry must be stopped")
+	}
+
+	e.Duration = duration
+	newStop := e.Start.Add(time.Duration(duration) * time.Second)
+	e.Stop = &newStop
+
+	return nil
+}
+
+// SetStartTime sets a time entry's start time. If the time entry is stopped,
+// the stop time will also be updated.
+func (e *TimeEntry) SetStartTime(start time.Time) {
+	e.Start = &start
+
+	if !e.IsRunning() {
+		newStop := start.Add(-(time.Duration(e.Duration) * time.Second))
+		e.Stop = &newStop
+	}
+}
+
+// SetStopTime sets a time entry's stop time. The duration will also be
+// updated. Note that the time entry must not be running.
+func (e *TimeEntry) SetStopTime(stop time.Time) (err error) {
+	if e.IsRunning() {
+		return fmt.Errorf("TimeEntry must be stopped")
+	}
+
+	e.Stop = &stop
+	e.Duration = int64(stop.Sub(*e.Start) / time.Second)
+
+	return nil
+}
+
 func indexOfTag(tag string, tags []string) int {
 	for i, t := range tags {
 		if t == tag {

@@ -167,7 +167,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
-					Data:    alfred.Stringify(timerCfg{ToToggle: &entry.ID}),
+					Data:    alfred.Stringify(timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}}),
 				},
 			})
 
@@ -281,7 +281,12 @@ type timerCfg struct {
 	ToStart  *startDesc `json:"tostart,omitempty"`
 	ToUpdate *TimeEntry `json:"toupdate,omitempty"`
 	ToDelete *int       `json:"todelete,omitempty"`
-	ToToggle *int       `json:"totoggle,omitempty"`
+	ToToggle *toggleCfg `json:"totoggle,omitempty"`
+}
+
+type toggleCfg struct {
+	Timer        int  `json:"timer"`
+	DurationOnly bool `json:"durationOnly"`
 }
 
 type startDesc struct {
@@ -333,12 +338,13 @@ func startTimeEntry(desc startDesc) (entry TimeEntry, err error) {
 	return entry, nil
 }
 
-func toggleTimeEntry(toToggle int) (updatedEntry TimeEntry, err error) {
+func toggleTimeEntry(toToggle toggleCfg) (updatedEntry TimeEntry, err error) {
 	var entry TimeEntry
 	var ok bool
 	var index int
-	if entry, index, ok = getTimerByID(toToggle); !ok {
-		err = fmt.Errorf("Invalid timer ID %d", toToggle)
+	var id = toToggle.Timer
+	if entry, index, ok = getTimerByID(id); !ok {
+		err = fmt.Errorf("Invalid timer ID %d", id)
 		return
 	}
 
@@ -350,7 +356,7 @@ func toggleTimeEntry(toToggle int) (updatedEntry TimeEntry, err error) {
 			return
 		}
 	} else {
-		if updatedEntry, err = session.ContinueTimeEntry(entry, config.DurationOnly); err != nil {
+		if updatedEntry, err = session.ContinueTimeEntry(entry, toToggle.DurationOnly); err != nil {
 			return
 		}
 	}
@@ -552,11 +558,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				newStart := getNewTime(entry.StartTime().Local(), newTime)
 
 				updateTimer := entry.Copy()
-				updateTimer.Start = &newStart
-
-				if !entry.IsRunning() {
-					updateTimer.Duration = entry.Duration
-				}
+				updateTimer.SetStartTime(newStart)
 
 				item.Title = command + ": " + timeStr
 				item.Subtitle = "Press enter to change start time (end time will also be adjusted)"
@@ -576,7 +578,6 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 	if !entry.IsRunning() {
 		if alfred.FuzzyMatches("stop:", parts[0]) {
 			command := "Stop"
-			parts := alfred.CleanSplitN(query, " ", 2)
 
 			var stopTime string
 			if !entry.StopTime().IsZero() {
@@ -589,6 +590,8 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				Subtitle:     "Change the stop time",
 			}
 
+			parts := alfred.CleanSplitN(query, " ", 2)
+
 			if len(parts) > 1 {
 				timeStr := parts[1]
 
@@ -596,7 +599,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 					newStop := getNewTime(entry.StopTime().Local(), newTime)
 
 					updateTimer := entry.Copy()
-					updateTimer.Stop = &newStop
+					updateTimer.SetStopTime(newStop)
 
 					item.Title = command + ": " + timeStr
 					item.Subtitle = "Press enter to change start time (end time will also be adjusted)"
@@ -615,20 +618,19 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 
 		if alfred.FuzzyMatches("duration:", parts[0]) {
 			command := "Duration"
-			parts := alfred.CleanSplitN(query, " ", 2)
 			duration := float32(entry.Duration) / 60.0 / 60.0
 
 			item := alfred.Item{
 				Title:        fmt.Sprintf("%s: %.2f", command, duration),
 				Autocomplete: command + ": ",
-				Subtitle:     "Change the duration",
+				Subtitle:     "Set the duration (in hours)",
 			}
 
 			// Add an option to round the duration down to a time increment
 			roundedDuration := float32(roundDuration(entry.Duration, true)) / 100
 
 			updateTimer := entry.Copy()
-			updateTimer.Duration = int64(roundedDuration * 60 * 60)
+			updateTimer.SetDuration(int64(roundedDuration * 60 * 60))
 
 			item.AddMod(alfred.ModAlt, alfred.ItemMod{
 				Subtitle: fmt.Sprintf("Round down to %.2f", roundedDuration),
@@ -639,6 +641,8 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				},
 			})
 
+			parts := alfred.CleanSplitN(query, " ", 2)
+
 			if strings.ToLower(parts[0]) == "duration:" {
 				item.Subtitle = "Change duration (end time will be adjusted)"
 			}
@@ -646,7 +650,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 			if len(parts) > 1 {
 				newDuration := parts[1]
 				if val, err := strconv.ParseFloat(newDuration, 64); err == nil {
-					updateTimer.Duration = int64(val * 60 * 60)
+					updateTimer.SetDuration(int64(val * 60 * 60))
 					item.Title = fmt.Sprintf("%s: %.2f", command, val)
 					item.Subtitle = "Press enter to change duration (end time will be adjusted)"
 					item.Arg = &alfred.ItemArg{
@@ -661,16 +665,34 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 		}
 
 		if alfred.FuzzyMatches("continue", query) {
-			items = append(items, alfred.Item{
+			subtitle := "Start a new instance of this time entry"
+			altSubtitle := "Continue this time entry"
+
+			if config.DurationOnly {
+				subtitle, altSubtitle = altSubtitle, subtitle
+			}
+
+			item := alfred.Item{
 				Title:    "Continue",
-				Subtitle: "Continue this time entry",
+				Subtitle: subtitle,
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
-					Data:    alfred.Stringify(timerCfg{ToToggle: &entry.ID}),
+					Data:    alfred.Stringify(timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}}),
 				},
 				Autocomplete: "Start",
+			}
+
+			item.AddMod(alfred.ModAlt, alfred.ItemMod{
+				Subtitle: altSubtitle,
+				Arg: &alfred.ItemArg{
+					Keyword: "timers",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(timerCfg{ToToggle: &toggleCfg{entry.ID, !config.DurationOnly}}),
+				},
 			})
+
+			items = append(items, item)
 		}
 	} else {
 		if alfred.FuzzyMatches("stop", query) {
@@ -680,7 +702,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
-					Data:    alfred.Stringify(timerCfg{ToToggle: &entry.ID}),
+					Data:    alfred.Stringify(timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}}),
 				},
 				Autocomplete: "Stop",
 			})
