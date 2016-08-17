@@ -17,11 +17,11 @@ var cacheFile string
 var configFile string
 var config struct {
 	APIKey           string `desc:"Toggl API key"`
-	DurationOnly     bool   `desc:"If true, extend time entries instead of starting copies."`
-	HoursMinutes     bool   `desc:"If true, show hh:mm instead of fractional hours."`
-	Rounding         int    `desc:"Minutes to round to, 0 to disable rounding."`
-	DefaultProjectID int    `desc:"Optional default project ID for new time entries; set to 0 to clear"`
 	AskForProject    bool   `desc:"If true, ask for a project if a default isn't set"`
+	DefaultProjectID int    `desc:"Optional default project ID for new time entries; set to 0 to clear"`
+	DurationOnly     bool   `desc:"If true, extend time entries instead of starting copies"`
+	HoursMinutes     bool   `desc:"If true, show hh:mm instead of fractional hours"`
+	Rounding         int    `desc:"Minutes to round to, 0 to disable rounding"`
 	TestMode         bool   `desc:"If true, disable auto refresh"`
 }
 var cache struct {
