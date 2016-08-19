@@ -220,9 +220,13 @@ func (session *Session) ContinueTimeEntry(timer TimeEntry, duronly bool) (TimeEn
 	dlog.Printf("Continuing timer %v", timer)
 	var respData []byte
 	var err error
-	if duronly {
+
+	if duronly && time.Now().Local().Format("2006-01-02") == timer.Start.Local().Format("2006-01-02") {
+		// If we're doing a duration-only continuation for a timer today, then
+		// create a new entry that's a copy of the existing one with an
+		// adjusted duration
 		entry := timer.Copy()
-		entry.Duration = -(time.Now().Unix())
+		entry.Duration = -(time.Now().Unix() - entry.Duration)
 		entry.DurOnly = true
 		data := map[string]interface{}{
 			"time_entry": entry,
@@ -230,11 +234,14 @@ func (session *Session) ContinueTimeEntry(timer TimeEntry, duronly bool) (TimeEn
 		path := fmt.Sprintf("/time_entries/%d", timer.ID)
 		respData, err = session.put(TogglAPI, path, data)
 	} else {
+		// If we're not doing a duration-only continuation, or a duration timer
+		// doesn't already exist for today, create a completely new time entry
 		data := map[string]interface{}{
 			"time_entry": map[string]interface{}{
 				"description":  timer.Description,
 				"pid":          timer.Pid,
 				"created_with": AppName,
+				"duronly":      duronly,
 			},
 		}
 		respData, err = session.post(TogglAPI, "/time_entries/start", data)
