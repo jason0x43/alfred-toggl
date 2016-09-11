@@ -503,6 +503,7 @@ This workflow allows the user to interact with the Toggl time tracking service. 
 			<key>ypos</key>
 			<integer>530</integer>
 		</dict>
+			<key>xpos</key>
 		<key>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</key>
 		<dict>
 			<key>xpos</key>
@@ -512,7 +513,7 @@ This workflow allows the user to interact with the Toggl time tracking service. 
 		</dict>
 	</dict>
 	<key>version</key>
-	<string></string>
+	<string>2.1.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/jason0x43/alfred-toggl</string>
 </dict>
