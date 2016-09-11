@@ -47,11 +47,60 @@
 				<false/>
 			</dict>
 		</array>
+		<key>4CFEA615-F888-402A-8D04-94ED6D0597F5</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>7D1EF032-E3B3-4D80-9808-587A268965E6</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>793B0B94-180B-44A5-8E6D-72931373C3AC</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>BB400209-31AF-47DF-BBE0-D98173E86D91</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>A23E58BB-61D4-4102-951A-7A3996F073BA</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>6C0DF82C-C85F-4855-8728-F3ADC38BB920</string>
+				<string>AE2074BB-45FF-457D-B734-068E46D8F16C</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>793B0B94-180B-44A5-8E6D-72931373C3AC</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>AE2074BB-45FF-457D-B734-068E46D8F16C</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>4CFEA615-F888-402A-8D04-94ED6D0597F5</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -99,6 +148,19 @@
 				<true/>
 			</dict>
 		</array>
+		<key>BB400209-31AF-47DF-BBE0-D98173E86D91</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>0C3F0B1D-D2D4-4BC7-B368-365E1985C9F2</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</key>
 		<array>
 			<dict>
@@ -140,45 +202,9 @@
 			<key>type</key>
 			<string>alfred.workflow.output.notification</string>
 			<key>uid</key>
-			<string>6C0DF82C-C85F-4855-8728-F3ADC38BB920</string>
+			<string>7D1EF032-E3B3-4D80-9808-587A268965E6</string>
 			<key>version</key>
 			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>triggerid</key>
-				<string>start</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.external</string>
-			<key>uid</key>
-			<string>46DCEE50-978C-407D-8649-2F8348C58809</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>./alfred-toggl -final "$1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string>./alfred-toggl -final "$1"</string>
-				<key>type</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>A23E58BB-61D4-4102-951A-7A3996F073BA</string>
-			<key>version</key>
-			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -226,6 +252,88 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>./alfred-toggl -final "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>./alfred-toggl -final "$1"</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>A23E58BB-61D4-4102-951A-7A3996F073BA</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>triggerid</key>
+				<string>start</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>46DCEE50-978C-407D-8649-2F8348C58809</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.hidealfred</string>
+			<key>uid</key>
+			<string>4CFEA615-F888-402A-8D04-94ED6D0597F5</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>inputstring</key>
+				<string>{query}</string>
+				<key>matchcasesensitive</key>
+				<false/>
+				<key>matchmode</key>
+				<integer>2</integer>
+				<key>matchstring</key>
+				<string>^(?!-trigger\b)</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.filter</string>
+			<key>uid</key>
+			<string>AE2074BB-45FF-457D-B734-068E46D8F16C</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>externaltriggerid</key>
+				<string>start</string>
+				<key>passinputasargument</key>
+				<true/>
+				<key>passvariables</key>
+				<true/>
+				<key>workflowbundleid</key>
+				<string>self</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.callexternaltrigger</string>
+			<key>uid</key>
+			<string>0C3F0B1D-D2D4-4BC7-B368-365E1985C9F2</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>alfredfiltersresults</key>
 				<false/>
 				<key>argumenttype</key>
@@ -265,6 +373,42 @@
 			<string>2A0B6604-951B-4A30-920A-6841052B0C2E</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>matchmode</key>
+				<integer>1</integer>
+				<key>matchstring</key>
+				<string>^-trigger\s</string>
+				<key>replacestring</key>
+				<string></string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.replace</string>
+			<key>uid</key>
+			<string>BB400209-31AF-47DF-BBE0-D98173E86D91</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>inputstring</key>
+				<string>{query}</string>
+				<key>matchcasesensitive</key>
+				<false/>
+				<key>matchmode</key>
+				<integer>2</integer>
+				<key>matchstring</key>
+				<string>^-trigger\s</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.filter</string>
+			<key>uid</key>
+			<string>793B0B94-180B-44A5-8E6D-72931373C3AC</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -440,11 +584,16 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Version: 2.0.0
-
-This workflow allows the user to interact with the Toggl time tracking service. It can be used to create timers and projects; start, stop, and adjust timers; and generate reports for recent timespans.</string>
+	<string>This workflow allows the user to interact with the Toggl time tracking service. It can be used to create timers and projects; start, stop, and adjust timers; and generate reports for recent timespans.</string>
 	<key>uidata</key>
 	<dict>
+		<key>0C3F0B1D-D2D4-4BC7-B368-365E1985C9F2</key>
+		<dict>
+			<key>xpos</key>
+			<integer>890</integer>
+			<key>ypos</key>
+			<integer>170</integer>
+		</dict>
 		<key>2A0B6604-951B-4A30-920A-6841052B0C2E</key>
 		<dict>
 			<key>xpos</key>
@@ -466,21 +615,40 @@ This workflow allows the user to interact with the Toggl time tracking service. 
 			<key>ypos</key>
 			<integer>50</integer>
 		</dict>
-		<key>6C0DF82C-C85F-4855-8728-F3ADC38BB920</key>
+		<key>4CFEA615-F888-402A-8D04-94ED6D0597F5</key>
 		<dict>
 			<key>xpos</key>
-			<integer>760</integer>
+			<integer>800</integer>
+			<key>ypos</key>
+			<integer>80</integer>
+		</dict>
+		<key>793B0B94-180B-44A5-8E6D-72931373C3AC</key>
+		<dict>
+			<key>xpos</key>
+			<integer>710</integer>
+			<key>ypos</key>
+			<integer>200</integer>
+		</dict>
+		<key>7D1EF032-E3B3-4D80-9808-587A268965E6</key>
+		<dict>
+			<key>xpos</key>
+			<integer>890</integer>
 			<key>ypos</key>
 			<integer>50</integer>
 		</dict>
 		<key>A23E58BB-61D4-4102-951A-7A3996F073BA</key>
 		<dict>
-			<key>note</key>
-			<string>Take action or loop back by invoking the external trigger via AppleScript</string>
 			<key>xpos</key>
-			<integer>590</integer>
+			<integer>520</integer>
 			<key>ypos</key>
 			<integer>50</integer>
+		</dict>
+		<key>AE2074BB-45FF-457D-B734-068E46D8F16C</key>
+		<dict>
+			<key>xpos</key>
+			<integer>710</integer>
+			<key>ypos</key>
+			<integer>80</integer>
 		</dict>
 		<key>B1B15BD6-663A-4B2B-B5D7-5EC7CEF816F1</key>
 		<dict>
@@ -503,7 +671,13 @@ This workflow allows the user to interact with the Toggl time tracking service. 
 			<key>ypos</key>
 			<integer>530</integer>
 		</dict>
+		<key>BB400209-31AF-47DF-BBE0-D98173E86D91</key>
+		<dict>
 			<key>xpos</key>
+			<integer>800</integer>
+			<key>ypos</key>
+			<integer>200</integer>
+		</dict>
 		<key>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</key>
 		<dict>
 			<key>xpos</key>
