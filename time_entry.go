@@ -472,6 +472,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 						updateEntry.Pid = proj.ID
 					}
 					item := alfred.Item{
+						UID:          fmt.Sprintf("%s.project.%d", workflow.BundleID(), proj.ID),
 						Title:        proj.Name,
 						Autocomplete: command + ": " + proj.Name,
 						Arg: &alfred.ItemArg{
