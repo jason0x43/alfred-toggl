@@ -39,6 +39,11 @@ func (c ReportFilter) Items(arg, data string) (items []alfred.Item, err error) {
 	var span span
 	if cfg.Span != nil {
 		span = *cfg.Span
+		if span.Start.IsZero() {
+			if span, err = getSpan(span.Name); err != nil {
+				return
+			}
+		}
 	} else {
 		var spanArg string
 		spanArg, arg = alfred.SplitCmd(arg)
@@ -62,7 +67,7 @@ func (c ReportFilter) Items(arg, data string) (items []alfred.Item, err error) {
 			})
 		}
 
-		return items, nil
+		return
 	}
 
 	var reportItems []alfred.Item
