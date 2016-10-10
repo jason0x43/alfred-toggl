@@ -109,6 +109,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>B0868B82-FC87-43DB-97F2-FBEE0F039C30</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A23E58BB-61D4-4102-951A-7A3996F073BA</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>B1B15BD6-663A-4B2B-B5D7-5EC7CEF816F1</key>
 		<array>
 			<dict>
@@ -582,6 +595,35 @@
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>action</key>
+				<integer>0</integer>
+				<key>argument</key>
+				<integer>3</integer>
+				<key>argumenttext</key>
+				<string>{"keyword":"report","data":"{\"Span\":{\"Name\":\"week\"}}"}</string>
+				<key>hotkey</key>
+				<integer>15</integer>
+				<key>hotmod</key>
+				<integer>1835008</integer>
+				<key>hotstring</key>
+				<string>R</string>
+				<key>leftcursor</key>
+				<false/>
+				<key>modsmode</key>
+				<integer>0</integer>
+				<key>relatedAppsMode</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.hotkey</string>
+			<key>uid</key>
+			<string>B0868B82-FC87-43DB-97F2-FBEE0F039C30</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>This workflow allows the user to interact with the Toggl time tracking service. It can be used to create timers and projects; start, stop, and adjust timers; and generate reports for recent timespans.</string>
@@ -592,98 +634,105 @@
 			<key>xpos</key>
 			<integer>890</integer>
 			<key>ypos</key>
-			<integer>170</integer>
+			<integer>160</integer>
 		</dict>
 		<key>2A0B6604-951B-4A30-920A-6841052B0C2E</key>
 		<dict>
 			<key>xpos</key>
 			<integer>230</integer>
 			<key>ypos</key>
-			<integer>170</integer>
+			<integer>160</integer>
 		</dict>
 		<key>2F84AF01-C03E-4208-BF3C-8C164102972F</key>
 		<dict>
 			<key>xpos</key>
 			<integer>230</integer>
 			<key>ypos</key>
-			<integer>290</integer>
+			<integer>280</integer>
 		</dict>
 		<key>46DCEE50-978C-407D-8649-2F8348C58809</key>
 		<dict>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 		</dict>
 		<key>4CFEA615-F888-402A-8D04-94ED6D0597F5</key>
 		<dict>
 			<key>xpos</key>
 			<integer>800</integer>
 			<key>ypos</key>
-			<integer>80</integer>
+			<integer>70</integer>
 		</dict>
 		<key>793B0B94-180B-44A5-8E6D-72931373C3AC</key>
 		<dict>
 			<key>xpos</key>
 			<integer>710</integer>
 			<key>ypos</key>
-			<integer>200</integer>
+			<integer>190</integer>
 		</dict>
 		<key>7D1EF032-E3B3-4D80-9808-587A268965E6</key>
 		<dict>
 			<key>xpos</key>
 			<integer>890</integer>
 			<key>ypos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 		</dict>
 		<key>A23E58BB-61D4-4102-951A-7A3996F073BA</key>
 		<dict>
 			<key>xpos</key>
 			<integer>520</integer>
 			<key>ypos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 		</dict>
 		<key>AE2074BB-45FF-457D-B734-068E46D8F16C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>710</integer>
 			<key>ypos</key>
-			<integer>80</integer>
+			<integer>70</integer>
+		</dict>
+		<key>B0868B82-FC87-43DB-97F2-FBEE0F039C30</key>
+		<dict>
+			<key>xpos</key>
+			<integer>230</integer>
+			<key>ypos</key>
+			<integer>770</integer>
 		</dict>
 		<key>B1B15BD6-663A-4B2B-B5D7-5EC7CEF816F1</key>
 		<dict>
 			<key>xpos</key>
 			<integer>230</integer>
 			<key>ypos</key>
-			<integer>650</integer>
+			<integer>640</integer>
 		</dict>
 		<key>B2511D88-9AF6-4ABE-BEA0-C4F8FE207C12</key>
 		<dict>
 			<key>xpos</key>
 			<integer>230</integer>
 			<key>ypos</key>
-			<integer>410</integer>
+			<integer>400</integer>
 		</dict>
 		<key>B5C43E68-5279-4D1A-8D66-C00C74CF5291</key>
 		<dict>
 			<key>xpos</key>
 			<integer>230</integer>
 			<key>ypos</key>
-			<integer>530</integer>
+			<integer>520</integer>
 		</dict>
 		<key>BB400209-31AF-47DF-BBE0-D98173E86D91</key>
 		<dict>
 			<key>xpos</key>
 			<integer>800</integer>
 			<key>ypos</key>
-			<integer>200</integer>
+			<integer>190</integer>
 		</dict>
 		<key>DF4110E4-368E-4DC8-9AB9-A5677FBA7295</key>
 		<dict>
 			<key>xpos</key>
 			<integer>230</integer>
 			<key>ypos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 		</dict>
 	</dict>
 	<key>version</key>
