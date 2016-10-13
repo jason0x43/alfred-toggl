@@ -572,14 +572,31 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 				newStart := getNewTime(entry.StartTime().Local(), newTime)
 
 				updateTimer := entry.Copy()
-				updateTimer.SetStartTime(newStart)
+				updateTimer.SetStartTime(newStart, true)
 
 				item.Title = command + ": " + timeStr
-				item.Subtitle = "Press enter to change start time (end time will also be adjusted)"
+				item.Subtitle = "Press enter to change start time"
+				if !entry.IsRunning() {
+					item.Subtitle += " (end time will also be adjusted)"
+				}
 				item.Arg = &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
 					Data:    alfred.Stringify(timerCfg{ToUpdate: &updateTimer}),
+				}
+
+				updateTimer = entry.Copy()
+				updateTimer.SetStartTime(newStart, false)
+
+				if !entry.IsRunning() {
+					item.AddMod(alfred.ModAlt, alfred.ItemMod{
+						Subtitle: "Press enter to change start time (end time will not be adjusted)",
+						Arg: &alfred.ItemArg{
+							Keyword: "timers",
+							Mode:    alfred.ModeDo,
+							Data:    alfred.Stringify(timerCfg{ToUpdate: &updateTimer}),
+						},
+					})
 				}
 			} else {
 				dlog.Printf("Invalid time: %s\n", timeStr)

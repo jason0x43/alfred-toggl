@@ -476,12 +476,16 @@ func (e *TimeEntry) SetDuration(duration int64) error {
 
 // SetStartTime sets a time entry's start time. If the time entry is stopped,
 // the stop time will also be updated.
-func (e *TimeEntry) SetStartTime(start time.Time) {
+func (e *TimeEntry) SetStartTime(start time.Time, updateEnd bool) {
 	e.Start = &start
 
 	if !e.IsRunning() {
-		newStop := start.Add(-(time.Duration(e.Duration) * time.Second))
-		e.Stop = &newStop
+		if updateEnd {
+			newStop := start.Add(time.Duration(e.Duration) * time.Second)
+			e.Stop = &newStop
+		} else {
+			e.Duration = e.Stop.Unix() - e.Start.Unix()
+		}
 	}
 }
 
