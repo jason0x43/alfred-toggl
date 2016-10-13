@@ -54,7 +54,7 @@ func main() {
 	}
 
 	if err := alfred.LoadJSON(cacheFile, &cache); err != nil {
-		dlog.Println("Error loading config:", err)
+		dlog.Println("Error loading cache:", err)
 	}
 
 	workflow.Run([]alfred.Command{
