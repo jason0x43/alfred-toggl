@@ -59,6 +59,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 				if proj.IsActive() && alfred.FuzzyMatches(proj.Name, arg) {
 					toStart.Pid = proj.ID
 					item := alfred.Item{
+						UID:          fmt.Sprintf("%s.project.%d", workflow.BundleID(), proj.ID),
 						Title:        proj.Name,
 						Autocomplete: proj.Name,
 						Arg: &alfred.ItemArg{

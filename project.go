@@ -53,7 +53,7 @@ func (c ProjectCommand) Items(arg, data string) (items []alfred.Item, err error)
 				projectCfg.Project = &entry.ID
 
 				item := alfred.Item{
-					UID:          fmt.Sprintf("%s-%d", workflow.BundleID(), entry.ID),
+					UID:          fmt.Sprintf("%s.project.%d", workflow.BundleID(), entry.ID),
 					Title:        entry.Name,
 					Subtitle:     "",
 					Autocomplete: entry.Name,
