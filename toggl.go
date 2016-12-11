@@ -91,7 +91,7 @@ type TimeEntry struct {
 	Description string     `json:"description,omitempty"`
 	Stop        *time.Time `json:"stop,omitempty"`
 	Start       *time.Time `json:"start,omitempty"`
-	Tags        []string   `json:"tags"`
+	Tags        []string   `json:"tags,omitempty"`
 	Duration    int64      `json:"duration,omitempty"`
 	DurOnly     bool       `json:"duronly"`
 }
@@ -242,6 +242,7 @@ func (session *Session) ContinueTimeEntry(timer TimeEntry, duronly bool) (TimeEn
 				"description":  timer.Description,
 				"pid":          timer.Pid,
 				"created_with": AppName,
+				"tags":         timer.Tags,
 				"duronly":      duronly,
 			},
 		}
