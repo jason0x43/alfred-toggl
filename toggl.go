@@ -42,13 +42,14 @@ type Session struct {
 // Account represents a user account.
 type Account struct {
 	Data struct {
-		APIToken    string      `json:"api_token"`
-		Timezone    string      `json:"timezone"`
-		ID          int         `json:"id"`
-		Workspaces  []Workspace `json:"workspaces"`
-		Projects    []Project   `json:"projects"`
-		Tags        []Tag       `json:"tags"`
-		TimeEntries []TimeEntry `json:"time_entries"`
+		APIToken        string      `json:"api_token"`
+		Timezone        string      `json:"timezone"`
+		ID              int         `json:"id"`
+		Workspaces      []Workspace `json:"workspaces"`
+		Projects        []Project   `json:"projects"`
+		Tags            []Tag       `json:"tags"`
+		TimeEntries     []TimeEntry `json:"time_entries"`
+		BeginningOfWeek int         `json:"beginning_of_week"`
 	} `json:"data"`
 	Since int `json:"since"`
 }

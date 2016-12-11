@@ -362,10 +362,16 @@ func getSpan(arg string) (s span, err error) {
 		s.Name = "week"
 		s.Label = "this week"
 		start := time.Now()
-		// TODO: consider configurable work week bounds
-		delta := -int(start.Weekday())
-		s.Start = toDayStart(start.AddDate(0, 0, delta))
+		startOfWeek := cache.Account.Data.BeginningOfWeek
+		startDay := int(start.Weekday())
+		delta := startDay - startOfWeek;
+		if startDay < startOfWeek {
+			delta += 7
+		}
+		s.Start = toDayStart(start.AddDate(0, 0, -delta))
 		s.End = toDayEnd(time.Now())
+		dlog.Printf("Creating week span; weekStart=%d, today=%d, delta=%d, start=%v, end=%v",
+			startOfWeek, start.Weekday(), delta, s.Start, s.End)
 		s.MultiDay = true
 	} else {
 		if strings.Contains(arg, "..") {
