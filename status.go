@@ -49,7 +49,6 @@ func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 		item := alfred.Item{
 			Title:    entry.Description,
 			Subtitle: subtitle,
-			Icon:     "running.png",
 			Arg: &alfred.ItemArg{
 				Keyword: "timers",
 				Data:    alfred.Stringify(timerCfg{Timer: &entry.ID}),
@@ -69,6 +68,7 @@ func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 	} else {
 		items = append(items, alfred.Item{
 			Title: "No timers currently running",
+			Icon:  "off.png",
 		})
 	}
 

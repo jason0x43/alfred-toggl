@@ -161,6 +161,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 			item := alfred.Item{
 				Title:        entry.Description,
 				Autocomplete: entry.Description,
+				Icon:         "off.png",
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Data:    alfred.Stringify(timerCfg{Timer: &entry.ID}),
@@ -210,7 +211,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 			}
 
 			if entry.IsRunning() {
-				item.Icon = "running.png"
+				item.Icon = "icon.png"
 			}
 
 			items = append(items, item)

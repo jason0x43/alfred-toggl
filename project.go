@@ -57,6 +57,7 @@ func (c ProjectCommand) Items(arg, data string) (items []alfred.Item, err error)
 					Title:        entry.Name,
 					Subtitle:     "",
 					Autocomplete: entry.Name,
+					Icon:         "off.png",
 					Arg: &alfred.ItemArg{
 						Keyword: "projects",
 						Data:    alfred.Stringify(projectCfg),

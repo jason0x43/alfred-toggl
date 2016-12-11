@@ -604,6 +604,10 @@
 				<integer>3</integer>
 				<key>argumenttext</key>
 				<string>{"keyword":"report","data":"{\"Span\":{\"Name\":\"week\"}}"}</string>
+				<key>focusedappvariable</key>
+				<false/>
+				<key>focusedappvariablename</key>
+				<string></string>
 				<key>hotkey</key>
 				<integer>15</integer>
 				<key>hotmod</key>
