@@ -33,6 +33,8 @@ The `timers` command (`tgl timers` or `tgt`) lists all user time entries created
 
 Actioning a time entry will show various properties for that entry, and also allow the entry to be modified or deleted. Holding `Cmd` while actioning a time entry from the list will continue the time entry (either creating a new instance of the entry or extending its duration, depending on the configured default behavior).
 
+If no entries are running, hold `Ctrl` while actioning the most recent time entry will "unstop" it. A new entry will be created with the same start time as the origina, and the original will be removed. The end result will be as if the entry had never been stopped.
+
 In the timer property list, actioning a property will allow it to be modifed. If the property involves selecting an option or a true/false value, a checklist of possible values will be presented. If the property is a string, number, or time, a new value can be entered directly. Pressing Enter will update the property.
 
 ![Timer menu](doc/timer_properties.png?raw=true)
@@ -68,6 +70,8 @@ Actioning one of the projects will show how time was spent on that project, brok
 The report date or period may also be specified manually. A single date may be entered using a variety of formats, such as ‘2016-08-12’ or ‘8/12’. A range of dates may be specified by separating two dates with ‘..’ (like ‘8/10..8/15’).
 
 ![Custom reporting period](doc/report_manual.png?raw=true)
+
+When using the predefined 'week' report type, the start day will be the "beginning of week" day specified in your Toggl account settings.
 
 ### `options`
 
