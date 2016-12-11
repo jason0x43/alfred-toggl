@@ -216,6 +216,18 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 
 			items = append(items, item)
 		}
+
+		if !filtered[0].IsRunning() {
+			items[0].AddMod(alfred.ModCtrl, alfred.ItemMod{
+				Subtitle: "Unstop this time entry",
+				Arg: &alfred.ItemArg{
+					Keyword: "timers",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(timerCfg{ToUnstop: &filtered[0].ID}),
+				},
+			})
+
+		}
 	}
 
 	if pid != -1 && arg == "" {
@@ -282,6 +294,15 @@ func (c TimeEntryCommand) Do(data string) (out string, err error) {
 		return fmt.Sprintf(`Deleted time entry "%s"`, timer.Description), nil
 	}
 
+	if cfg.ToUnstop != nil {
+		dlog.Printf("unstopping entry %v", cfg.ToUnstop)
+		var timer TimeEntry
+		if timer, err = unstopTimeEntry(*cfg.ToUnstop); err != nil {
+			return
+		}
+		return fmt.Sprintf(`Unstopped time entry "%s"`, timer.Description), nil
+	}
+
 	return "Unrecognized input", nil
 }
 
@@ -294,6 +315,7 @@ type timerCfg struct {
 	ToStart  *startDesc `json:"tostart,omitempty"`
 	ToUpdate *TimeEntry `json:"toupdate,omitempty"`
 	ToDelete *int       `json:"todelete,omitempty"`
+	ToUnstop *int       `json:"tounstop,omitempty"`
 	ToToggle *toggleCfg `json:"totoggle,omitempty"`
 }
 
@@ -393,6 +415,42 @@ func toggleTimeEntry(toToggle toggleCfg) (updatedEntry TimeEntry, err error) {
 			log.Printf("Error saving cache: %v\n", err)
 			return
 		}
+	}
+
+	return
+}
+
+func unstopTimeEntry(id int) (newEntry TimeEntry, err error) {
+	var ok bool
+	var index int
+	var entry TimeEntry
+	if entry, index, ok = getTimerByID(id); !ok {
+		err = fmt.Errorf(`Time entry %d does not exist`, id)
+		return
+	}
+
+	session := OpenSession(config.APIKey)
+	newEntry, err = session.UnstopTimeEntry(entry)
+	adata := &cache.Account.Data
+
+	if err == nil || !strings.HasPrefix(err.Error(), "New entry") {
+		// Append the new time entry
+		if newEntry.ID != 0 {
+			cache.Account.Data.TimeEntries = append(cache.Account.Data.TimeEntries, newEntry)
+		}
+	}
+
+	if err == nil || !strings.HasPrefix(err.Error(), "Old entry") {
+		// Remove the original time entry and append
+		if index < len(adata.TimeEntries)-1 {
+			adata.TimeEntries = append(adata.TimeEntries[:index], adata.TimeEntries[index+1:]...)
+		} else {
+			adata.TimeEntries = adata.TimeEntries[:index]
+		}
+	}
+
+	if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
+		dlog.Printf("Error saving cache: %s\n", err)
 	}
 
 	return

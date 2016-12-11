@@ -251,6 +251,46 @@ func (session *Session) ContinueTimeEntry(timer TimeEntry, duronly bool) (TimeEn
 	return timeEntryRequest(respData, err)
 }
 
+// UnstopTimeEntry starts a new entry that is a copy of the given one, including
+// the given timer's start time. The given time entry is then deleted.
+func (session *Session) UnstopTimeEntry(timer TimeEntry) (newEntry TimeEntry, err error) {
+	dlog.Printf("Unstopping timer %v", timer)
+	var respData []byte
+
+	data := map[string]interface{}{
+		"time_entry": map[string]interface{}{
+			"description":  timer.Description,
+			"pid":          timer.Pid,
+			"created_with": AppName,
+			"tags":         timer.Tags,
+			"duronly":      timer.DurOnly,
+		},
+	}
+
+	if respData, err = session.post(TogglAPI, "/time_entries/start", data); err != nil {
+		err = fmt.Errorf("New entry not started: %v", err)
+		return
+	}
+
+	if newEntry, err = timeEntryRequest(respData, err); err != nil {
+		err = fmt.Errorf("New entry not valid: %v", err)
+		return
+	}
+
+	newEntry.Start = timer.Start
+
+	if _, err = session.UpdateTimeEntry(newEntry); err != nil {
+		err = fmt.Errorf("New entry not updated: %v", err)
+		return
+	}
+
+	if _, err = session.DeleteTimeEntry(timer); err != nil {
+		err = fmt.Errorf("Old entry not deleted: %v", err)
+	}
+
+	return
+}
+
 // StopTimeEntry stops a running time entry.
 func (session *Session) StopTimeEntry(timer TimeEntry) (TimeEntry, error) {
 	dlog.Printf("Stopping timer %v", timer)
