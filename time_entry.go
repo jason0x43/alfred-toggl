@@ -693,7 +693,7 @@ func timeEntryItems(entry *TimeEntry, query string) (items []alfred.Item, err er
 					updateTimer.SetStopTime(newStop)
 
 					item.Title = command + ": " + timeStr
-					item.Subtitle = "Press enter to change start time (end time will also be adjusted)"
+					item.Subtitle = "Press enter to change stop time"
 					item.Arg = &alfred.ItemArg{
 						Keyword: "timers",
 						Mode:    alfred.ModeDo,
