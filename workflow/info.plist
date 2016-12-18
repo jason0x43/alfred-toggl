@@ -740,7 +740,7 @@
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.4.0</string>
+	<string>2.5.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/jason0x43/alfred-toggl</string>
 </dict>
