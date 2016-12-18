@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"os/exec"
 	"time"
 
 	"github.com/jason0x43/go-alfred"
@@ -82,39 +80,5 @@ func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 		break
 	}
 
-	if latest, available := workflow.UpdateAvailable(); available {
-		items = append(items, alfred.Item{
-			Title:    fmt.Sprintf("Update available: %v", latest.Version),
-			Subtitle: fmt.Sprintf("You have %s", workflow.Version()),
-			Arg: &alfred.ItemArg{
-				Keyword: "status",
-				Mode:    alfred.ModeDo,
-				Data:    alfred.Stringify(statusCfg{ToOpen: latest.URL}),
-			},
-		})
-	}
-
 	return
-}
-
-// Do runs the command
-func (c StatusFilter) Do(data string) (out string, err error) {
-	var cfg statusCfg
-
-	if data != "" {
-		if err := json.Unmarshal([]byte(data), &cfg); err != nil {
-			dlog.Printf("Error unmarshaling tag data: %v", err)
-		}
-	}
-
-	if cfg.ToOpen != "" {
-		dlog.Printf("opening %s", cfg.ToOpen)
-		err = exec.Command("open", cfg.ToOpen).Run()
-	}
-
-	return
-}
-
-type statusCfg struct {
-	ToOpen string
 }

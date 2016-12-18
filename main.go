@@ -43,6 +43,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	workflow.UpdateIcon = "running.png"
+
 	configFile = path.Join(workflow.DataDir(), "config.json")
 	cacheFile = path.Join(workflow.CacheDir(), "cache.json")
 
