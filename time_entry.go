@@ -101,60 +101,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 		}
 	}
 
-	if len(filtered) == 0 {
-		// No entries matched, so we must be creating a new one
-		if arg != "" {
-			// Arg is the new project's description
-
-			if pid == -1 && config.DefaultProjectID != 0 {
-				pid = config.DefaultProjectID
-			}
-
-			newTimer := startDesc{Description: arg}
-			if pid != -1 {
-				newTimer.Pid = pid
-			}
-
-			subtitle := "New entry"
-			if pid != -1 {
-				project, _, _ := getProjectByID(pid)
-				subtitle += " in " + project.Name
-			}
-
-			defaultMode := alfred.ModeDo
-			altMode := alfred.ModeTell
-			altTitle := "Choose project..."
-
-			if pid == -1 && config.AskForProject {
-				defaultMode, altMode = altMode, defaultMode
-				altTitle = "Use default (or no) project"
-				subtitle += ", press Enter to choose a project"
-			}
-
-			item := alfred.Item{
-				Title:    arg,
-				Subtitle: subtitle,
-				Arg: &alfred.ItemArg{
-					Keyword: "timers",
-					Mode:    defaultMode,
-					Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
-				},
-			}
-
-			newTimer.Pid = 0
-
-			item.AddMod(alfred.ModAlt, alfred.ItemMod{
-				Subtitle: altTitle,
-				Arg: &alfred.ItemArg{
-					Keyword: "timers",
-					Mode:    altMode,
-					Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
-				},
-			})
-
-			items = append(items, item)
-		}
-	} else {
+	if len(filtered) > 0 {
 		sort.Sort(sort.Reverse(byTime(filtered)))
 
 		for _, entry := range filtered {
@@ -226,7 +173,63 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 					Data:    alfred.Stringify(timerCfg{ToUnstop: &filtered[0].ID}),
 				},
 			})
+		}
+	}
 
+	if arg != "" {
+		// Arg is the new project's description
+
+		if pid == -1 && config.DefaultProjectID != 0 {
+			pid = config.DefaultProjectID
+		}
+
+		newTimer := startDesc{Description: arg}
+		if pid != -1 {
+			newTimer.Pid = pid
+		}
+
+		subtitle := "New entry"
+		if pid != -1 {
+			project, _, _ := getProjectByID(pid)
+			subtitle += " in " + project.Name
+		}
+
+		defaultMode := alfred.ModeDo
+		altMode := alfred.ModeTell
+		altTitle := "Choose project..."
+
+		if pid == -1 && config.AskForProject {
+			defaultMode, altMode = altMode, defaultMode
+			altTitle = "Use default (or no) project"
+			subtitle += ", press Enter to choose a project"
+		}
+
+		item := alfred.Item{
+			Title:    arg,
+			Icon:     "off.png",
+			Subtitle: subtitle,
+			Arg: &alfred.ItemArg{
+				Keyword: "timers",
+				Mode:    defaultMode,
+				Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
+			},
+		}
+
+		newTimer.Pid = 0
+
+		item.AddMod(alfred.ModAlt, alfred.ItemMod{
+			Subtitle: altTitle,
+			Arg: &alfred.ItemArg{
+				Keyword: "timers",
+				Mode:    altMode,
+				Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
+			},
+		})
+
+		if config.NewTimerFirst {
+			items = append([]alfred.Item{item}, items...)
+		} else {
+			items = append(items, item)
 		}
 	}
 

@@ -22,6 +22,7 @@ var config struct {
 	DurationOnly     bool   `desc:"If true, extend time entries instead of starting copies"`
 	HoursMinutes     bool   `desc:"If true, show hh:mm instead of fractional hours"`
 	Rounding         int    `desc:"Minutes to round to, 0 to disable rounding"`
+	NewTimerFirst    bool   `desc:"If true, show new timer before restart timer"`
 	TestMode         bool   `desc:"If true, disable auto refresh"`
 }
 var cache struct {
