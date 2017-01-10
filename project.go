@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jason0x43/go-alfred"
+	"github.com/jason0x43/go-toggl"
 )
 
 // ProjectCommand is a command for handling projects
@@ -115,7 +116,7 @@ func (c ProjectCommand) Do(data string) (out string, err error) {
 
 	if cfg.ToCreate != nil {
 		dlog.Printf("creating project %v", cfg.ToCreate)
-		var project Project
+		var project toggl.Project
 		if project, err = createProject(cfg.ToCreate); err != nil {
 			return
 		}
@@ -124,7 +125,7 @@ func (c ProjectCommand) Do(data string) (out string, err error) {
 
 	if cfg.ToUpdate != nil {
 		dlog.Printf("updating project %v", cfg.ToUpdate)
-		var project Project
+		var project toggl.Project
 		if project, err = updateProject(cfg.ToUpdate); err != nil {
 			return
 		}
@@ -140,7 +141,7 @@ type projectCfg struct {
 	Project  *int                  `json:"project,omitempty"`
 	Default  *int                  `json:"default,omitempty"`
 	ToCreate *createProjectMessage `json:"create,omitempty"`
-	ToUpdate *Project              `json:"update,omitempty"`
+	ToUpdate *toggl.Project        `json:"update,omitempty"`
 }
 
 type createProjectMessage struct {
@@ -148,8 +149,8 @@ type createProjectMessage struct {
 	WID  int
 }
 
-func createProject(msg *createProjectMessage) (project Project, err error) {
-	session := OpenSession(config.APIKey)
+func createProject(msg *createProjectMessage) (project toggl.Project, err error) {
+	session := toggl.OpenSession(config.APIKey)
 
 	if msg.WID == 0 {
 		msg.WID = cache.Account.Data.Workspaces[0].ID
@@ -165,8 +166,8 @@ func createProject(msg *createProjectMessage) (project Project, err error) {
 	return
 }
 
-func updateProject(p *Project) (project Project, err error) {
-	session := OpenSession(config.APIKey)
+func updateProject(p *toggl.Project) (project toggl.Project, err error) {
+	session := toggl.OpenSession(config.APIKey)
 
 	if project, err = session.UpdateProject(*p); err != nil {
 		return
@@ -187,7 +188,7 @@ func updateProject(p *Project) (project Project, err error) {
 	return
 }
 
-func projectItems(project Project, arg string) (items []alfred.Item, err error) {
+func projectItems(project toggl.Project, arg string) (items []alfred.Item, err error) {
 	if alfred.FuzzyMatches("name:", arg) {
 		item := alfred.Item{}
 		_, name := alfred.SplitCmd(arg)

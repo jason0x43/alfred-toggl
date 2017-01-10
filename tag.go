@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/jason0x43/go-alfred"
+	"github.com/jason0x43/go-toggl"
 )
 
 // tag filter --------------------------------------------
@@ -135,7 +136,7 @@ func (c TagCommand) Do(data string) (out string, err error) {
 		}
 	}
 
-	session := OpenSession(config.APIKey)
+	session := toggl.OpenSession(config.APIKey)
 
 	if cfg.ToUpdate != nil {
 		if _, err = session.UpdateTag(*cfg.ToUpdate); err != nil {
@@ -144,7 +145,7 @@ func (c TagCommand) Do(data string) (out string, err error) {
 	}
 
 	if cfg.ToCreate != nil {
-		var tag Tag
+		var tag toggl.Tag
 		if cfg.ToCreate.WID == 0 {
 			cfg.ToCreate.WID = cache.Account.Data.Workspaces[0].ID
 		}
@@ -173,5 +174,5 @@ type tagCfg struct {
 		Name string
 		WID  int
 	}
-	ToUpdate *Tag
+	ToUpdate *toggl.Tag
 }

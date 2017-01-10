@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jason0x43/go-alfred"
+	"github.com/jason0x43/go-toggl"
 )
 
 var dlog = log.New(os.Stderr, "[toggl] ", log.LstdFlags)
@@ -27,7 +28,7 @@ var config struct {
 }
 var cache struct {
 	Workspace int
-	Account   Account
+	Account   toggl.Account
 	Time      time.Time
 }
 var workflow alfred.Workflow
