@@ -201,7 +201,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 
 		if pid == -1 && config.AskForProject {
 			defaultMode, altMode = altMode, defaultMode
-			altTitle = "Use default (or no) project"
+			altTitle = "Start with default (or no) project"
 			subtitle += ", press Enter to choose a project"
 		}
 
@@ -218,8 +218,18 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 
 		newTimer.Pid = 0
 
-		item.AddMod(alfred.ModAlt, alfred.ItemMod{
+		item.AddMod(alfred.ModCmd, alfred.ItemMod{
 			Subtitle: altTitle,
+			Arg: &alfred.ItemArg{
+				Keyword: "timers",
+				Mode:    altMode,
+				Data:    alfred.Stringify(timerCfg{ToStart: &newTimer}),
+			},
+		})
+
+		// TODO: remove in a future version
+		item.AddMod(alfred.ModAlt, alfred.ItemMod{
+			Subtitle: "(Deprecated) " + altTitle,
 			Arg: &alfred.ItemArg{
 				Keyword: "timers",
 				Mode:    altMode,
