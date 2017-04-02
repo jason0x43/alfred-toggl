@@ -36,6 +36,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 
 	pid := -1
 	tid := -1
+	tag := ""
 
 	var cfg timerCfg
 	if data != "" {
@@ -46,6 +47,10 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 
 	if cfg.Project != nil {
 		pid = *cfg.Project
+	}
+
+	if cfg.Tag != nil {
+		tag, _ = findTagNameByID(*cfg.Tag)
 	}
 
 	if cfg.Timer != nil {
@@ -85,10 +90,37 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 			items, err = timeEntryItems(&entry, arg)
 			return
 		}
-	} else if pid != -1 {
-		// Filter time entries by project ID
-		entries = findTimersByProjectID(pid)
-		dlog.Printf("found %d timers for project %d", len(entries), pid)
+	} else if pid != -1 || tag != "" {
+		// Filter time entries by project ID and/or tag ID
+		var projectEntries []toggl.TimeEntry
+		var tagEntries []toggl.TimeEntry
+
+		if pid != -1 {
+			projectEntries = findTimersByProjectID(pid)
+			dlog.Printf("found %d timers for project %d", len(entries), pid)
+		}
+
+		if tag != "" {
+			tagEntries = findTimersByTag(tag)
+			dlog.Printf("found %d timers for tag %s", len(entries), tag)
+		}
+
+		if projectEntries != nil && tagEntries != nil {
+			entryMap := map[int]bool{}
+			entries = []toggl.TimeEntry{}
+			for _, entry := range projectEntries {
+				entryMap[entry.ID] = true
+			}
+			for _, entry := range tagEntries {
+				if entryMap[entry.ID] {
+					entries = append(entries, entry)
+				}
+			}
+		} else if projectEntries != nil {
+			entries = projectEntries
+		} else {
+			entries = tagEntries
+		}
 	} else {
 		// Use all time entries
 		entries = cache.Account.Data.TimeEntries
@@ -326,6 +358,7 @@ type timerCfg struct {
 	Timer    *int             `json:"timer,omitempty"`
 	Property *string          `json:"property,omitempty"`
 	Project  *int             `json:"project,omitempty"`
+	Tag      *int             `json:"tag,omitempty"`
 	ToStart  *startDesc       `json:"tostart,omitempty"`
 	ToUpdate *toggl.TimeEntry `json:"toupdate,omitempty"`
 	ToDelete *int             `json:"todelete,omitempty"`

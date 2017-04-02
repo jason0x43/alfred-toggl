@@ -73,6 +73,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>9E0AC339-441C-4BB1-AAFB-C9E2CCDF66F0</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A23E58BB-61D4-4102-951A-7A3996F073BA</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>A23E58BB-61D4-4102-951A-7A3996F073BA</key>
 		<array>
 			<dict>
@@ -598,6 +611,49 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>4</integer>
+				<key>keyword</key>
+				<string>tgg</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Syncing...</string>
+				<key>script</key>
+				<string>./alfred-toggl "$1" "{\"keyword\":\"tags\"}"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Tags</string>
+				<key>title</key>
+				<string>tgg</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>9E0AC339-441C-4BB1-AAFB-C9E2CCDF66F0</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>action</key>
 				<integer>0</integer>
 				<key>argument</key>
@@ -682,6 +738,13 @@
 			<key>ypos</key>
 			<integer>40</integer>
 		</dict>
+		<key>9E0AC339-441C-4BB1-AAFB-C9E2CCDF66F0</key>
+		<dict>
+			<key>xpos</key>
+			<integer>230</integer>
+			<key>ypos</key>
+			<integer>760</integer>
+		</dict>
 		<key>A23E58BB-61D4-4102-951A-7A3996F073BA</key>
 		<dict>
 			<key>xpos</key>
@@ -701,7 +764,7 @@
 			<key>xpos</key>
 			<integer>230</integer>
 			<key>ypos</key>
-			<integer>770</integer>
+			<integer>880</integer>
 		</dict>
 		<key>B1B15BD6-663A-4B2B-B5D7-5EC7CEF816F1</key>
 		<dict>

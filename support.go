@@ -88,6 +88,15 @@ func getProjectByID(id int) (toggl.Project, int, bool) {
 	return toggl.Project{}, 0, false
 }
 
+func getTagByID(id int) (tag toggl.Tag, index int, found bool) {
+	for i, entry := range cache.Account.Data.Tags[:] {
+		if entry.ID == id {
+			return entry, i, true
+		}
+	}
+	return toggl.Tag{}, 0, false
+}
+
 func getTimerByID(id int) (toggl.TimeEntry, int, bool) {
 	for i, entry := range cache.Account.Data.TimeEntries[:] {
 		if entry.ID == id {
@@ -107,6 +116,19 @@ func findTimersByProjectID(pid int) []toggl.TimeEntry {
 	return entries
 }
 
+func findTimersByTag(tag string) []toggl.TimeEntry {
+	var entries []toggl.TimeEntry
+	for _, entry := range cache.Account.Data.TimeEntries[:] {
+		for _, t := range entry.Tags {
+			if t == tag {
+				entries = append(entries, entry)
+				break
+			}
+		}
+	}
+	return entries
+}
+
 func findTagByName(name string) (toggl.Tag, bool) {
 	for _, tag := range cache.Account.Data.Tags {
 		if tag.Name == name {
@@ -114,6 +136,15 @@ func findTagByName(name string) (toggl.Tag, bool) {
 		}
 	}
 	return toggl.Tag{}, false
+}
+
+func findTagNameByID(id int) (name string, found bool) {
+	for _, tag := range cache.Account.Data.Tags {
+		if tag.ID == id {
+			return tag.Name, true
+		}
+	}
+	return
 }
 
 func getTimeEntriesForQuery(query string) []toggl.TimeEntry {

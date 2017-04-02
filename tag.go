@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
-	"strings"
 
 	"github.com/jason0x43/go-alfred"
 	"github.com/jason0x43/go-toggl"
@@ -17,7 +17,7 @@ type TagCommand struct{}
 // About returns information about this command
 func (c TagCommand) About() alfred.CommandDef {
 	return alfred.CommandDef{
-		Keyword:     "tag",
+		Keyword:     "tags",
 		Description: "List your tags",
 		IsEnabled:   config.APIKey != "",
 	}
@@ -30,96 +30,59 @@ func (c TagCommand) Items(arg, data string) (items []alfred.Item, err error) {
 		return
 	}
 
-	parts := alfred.TrimAllLeft(strings.Split(arg, " "))
-	log.Printf("parts: %d", len(parts))
+	var cfg tagCfg
 
-	if len(parts) > 1 {
-		tag, found := findTagByName(parts[0])
-		if !found {
-			items = append(items, alfred.Item{Title: "Invalid tag '" + parts[0] + "'"})
+	if data != "" {
+		if err = json.Unmarshal([]byte(data), &cfg); err != nil {
+			dlog.Printf("Error unmarshalling tag config: %v", err)
 		}
+	}
 
-		subcommand := parts[1]
+	tid := -1
+	if cfg.Tag != nil {
+		tid = *cfg.Tag
+	}
 
-		switch subcommand {
-		case "timers":
-			// list time entries with this tag
-			entries := getLatestTimeEntriesForTag(tag.Name)
-			if len(entries) == 0 {
-				items = append(items, alfred.Item{
-					Title: "No time entries",
-				})
-			} else {
-				for _, entry := range entries {
-					items = append(items, alfred.Item{
-						Title: entry.Description,
-					})
-				}
-			}
-
-		case "name":
-			name := tag.Name
-			// arg := ""
-			if len(parts) > 2 && parts[2] != "" {
-				name = parts[2]
-				updateTag := tag
-				updateTag.Name = name
-				// dataString, _ := json.Marshal(updateTag)
-				// arg = "update-tag " + string(dataString)
-			}
-			items = append(items, alfred.Item{
-				Title: "name: " + name,
-				// Arg:   arg,
-			})
-		default:
-			if alfred.FuzzyMatches("name", subcommand) {
-				items = append(items, alfred.Item{
-					Title:        "name: " + tag.Name,
-					Autocomplete: "name" + " ",
-				})
-			}
-			if alfred.FuzzyMatches("timers", subcommand) {
-				title := "timers: "
-				if tagHasTimeEntries(tag.Name) {
-					title += "..."
-				} else {
-					title += "<None>"
-				}
-				items = append(items, alfred.Item{
-					Title:        title,
-					Autocomplete: "timers",
-				})
-			}
-			if alfred.FuzzyMatches("delete", subcommand) {
-				// data := deleteMessage{Type: "tag", ID: tag.ID}
-				// dataString, _ := json.Marshal(data)
-
-				items = append(items, alfred.Item{
-					Title:        "delete",
-					Autocomplete: "delete",
-					// Arg:          "delete " + string(dataString),
-				})
-			}
+	if tid != -1 {
+		// List menu for a project
+		if tag, _, ok := getTagByID(tid); ok {
+			return tagItems(tag, arg)
 		}
 	} else {
+		tagCfg := tagCfg{}
+
 		for _, entry := range cache.Account.Data.Tags {
 			if alfred.FuzzyMatches(entry.Name, arg) {
+				tagCfg.Tag = &entry.ID
+
 				items = append(items, alfred.Item{
+					UID:          fmt.Sprintf("%s.tag.%d", workflow.BundleID(), entry.ID),
 					Title:        entry.Name,
-					Autocomplete: entry.Name + " ",
+					Autocomplete: entry.Name,
+					Arg: &alfred.ItemArg{
+						Keyword: "tags",
+						Data:    alfred.Stringify(tagCfg),
+					},
 				})
 			}
+		}
+
+		if len(items) == 0 && arg != "" {
+			tagCfg.ToCreate = &createTagMessage{Name: arg}
+
+			items = append(items, alfred.Item{
+				Title:    arg,
+				Subtitle: "New tag",
+				Arg: &alfred.ItemArg{
+					Keyword: "tags",
+					Mode:    alfred.ModeDo,
+					Data:    alfred.Stringify(tagCfg),
+				},
+			})
 		}
 
 		if len(items) == 0 {
-			// data := createTagMessage{Name: parts[0]}
-			// dataString, _ := json.Marshal(data)
-
-			items = append(items, alfred.Item{
-				Title:    parts[0],
-				Subtitle: "New tag",
-				// Arg:      "create-tag " + string(dataString),
-			})
+			items = append(items, alfred.Item{Title: "No matching tags"})
 		}
 	}
 
@@ -140,7 +103,7 @@ func (c TagCommand) Do(data string) (out string, err error) {
 
 	if cfg.ToUpdate != nil {
 		if _, err = session.UpdateTag(*cfg.ToUpdate); err != nil {
-			return
+			out += "Updated tag"
 		}
 	}
 
@@ -154,8 +117,41 @@ func (c TagCommand) Do(data string) (out string, err error) {
 			if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
 				log.Printf("Error saving cache: %s\n", err)
 			}
+		}
+
+		if out != "" {
+			out += ", created tag"
 		} else {
+			out = "Created tag"
+		}
+	}
+
+	if cfg.ToDelete != nil {
+		var ok bool
+		var tag toggl.Tag
+		var index int
+		var id = *cfg.ToDelete
+		if tag, index, ok = getTagByID(id); !ok {
+			err = fmt.Errorf(`Tag %d does not exist`, id)
 			return
+		}
+
+		if _, err = session.DeleteTag(tag); err == nil {
+			adata := &cache.Account.Data
+			if index < len(adata.Tags)-1 {
+				adata.Tags = append(adata.Tags[:index], adata.Tags[index+1:]...)
+			} else {
+				adata.Tags = adata.Tags[:index]
+			}
+			if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
+				dlog.Printf("Error saving cache: %s\n", err)
+			}
+		}
+
+		if out != "" {
+			out += ", deleted tag"
+		} else {
+			out = "Deleted tag"
 		}
 	}
 
@@ -164,15 +160,70 @@ func (c TagCommand) Do(data string) (out string, err error) {
 	// refresh everything.
 	refresh()
 
-	return "Updated tag", nil
+	return
 }
 
 // support -------------------------------------------------------------------
 
 type tagCfg struct {
-	ToCreate *struct {
-		Name string
-		WID  int
-	}
+	Tag      *int
+	ToCreate *createTagMessage
 	ToUpdate *toggl.Tag
+	ToDelete *int
+}
+
+type createTagMessage struct {
+	Name string
+	WID  int
+}
+
+func tagItems(tag toggl.Tag, arg string) (items []alfred.Item, err error) {
+	if alfred.FuzzyMatches("timers", arg) {
+		items = append(items, alfred.Item{
+			Title:        "Time entries...",
+			Subtitle:     "List associated time entries",
+			Autocomplete: "Time entries...",
+			Arg: &alfred.ItemArg{
+				Keyword: "timers",
+				Data:    alfred.Stringify(timerCfg{Tag: &tag.ID}),
+			},
+		})
+	}
+
+	if alfred.FuzzyMatches("name", arg) {
+		item := alfred.Item{}
+		_, name := alfred.SplitCmd(arg)
+
+		if name != "" {
+			updateEntry := tag
+			updateEntry.Name = name
+			item.Title = fmt.Sprintf("Change name to '%s'", name)
+			item.Subtitle = "Name: " + tag.Name
+			item.Arg = &alfred.ItemArg{
+				Keyword: "tags",
+				Mode:    alfred.ModeDo,
+				Data:    alfred.Stringify(tagCfg{ToUpdate: &updateEntry}),
+			}
+
+		} else {
+			item.Title = "Name: " + tag.Name
+			item.Autocomplete = "Name: "
+		}
+
+		items = append(items, item)
+	}
+
+	if alfred.FuzzyMatches("delete", arg) {
+		items = append(items, alfred.Item{
+			Title:        "Delete",
+			Autocomplete: "Delete",
+			Arg: &alfred.ItemArg{
+				Keyword: "tags",
+				Mode:    alfred.ModeDo,
+				Data:    alfred.Stringify(tagCfg{ToDelete: &tag.ID}),
+			},
+		})
+	}
+
+	return
 }
