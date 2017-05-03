@@ -892,5 +892,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 		})
 	}
 
+	alfred.FuzzySort(items, query)
+
 	return
 }
