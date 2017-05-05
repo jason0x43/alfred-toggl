@@ -106,6 +106,15 @@ func getTimerByID(id int) (timer toggl.TimeEntry, index int, found bool) {
 	return
 }
 
+func getClientByID(id int) (client toggl.Client, index int, found bool) {
+	for i, client := range cache.Account.Data.Clients {
+		if client.ID == id {
+			return client, i, true
+		}
+	}
+	return
+}
+
 func findTimersByProjectID(pid int) (entries []toggl.TimeEntry) {
 	for _, entry := range cache.Account.Data.TimeEntries[:] {
 		if entry.Pid == pid {

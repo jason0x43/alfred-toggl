@@ -50,13 +50,16 @@ func (c ProjectCommand) Items(arg, data string) (items []alfred.Item, err error)
 		projectCfg := projectCfg{}
 
 		for _, entry := range cache.Account.Data.Projects {
-			if entry.IsActive() && alfred.FuzzyMatches(entry.Name, arg) {
+
+			client, _, _ := getClientByID(entry.Cid)
+
+			if entry.IsActive() && alfred.FuzzyMatches(entry.Name+client.Name, arg) {
 				projectCfg.Project = &entry.ID
 
 				item := alfred.Item{
 					UID:          fmt.Sprintf("%s.project.%d", workflow.BundleID(), entry.ID),
 					Title:        entry.Name,
-					Subtitle:     "",
+					Subtitle:     client.Name,
 					Autocomplete: entry.Name,
 					Icon:         "off.png",
 					Arg: &alfred.ItemArg{
