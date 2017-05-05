@@ -571,7 +571,9 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 			}
 
 			for _, proj := range cache.Account.Data.Projects {
-				if proj.IsActive() && alfred.FuzzyMatches(proj.Name, name) {
+				client, _, _ := getClientByID(proj.Cid)
+
+				if proj.IsActive() && alfred.FuzzyMatches(proj.Name+client.Name, name) {
 					updateEntry := entry.Copy()
 					if entry.Pid == proj.ID {
 						updateEntry.Pid = 0
@@ -581,6 +583,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 					item := alfred.Item{
 						UID:          fmt.Sprintf("%s.project.%d", workflow.BundleID(), proj.ID),
 						Title:        proj.Name,
+						Subtitle:     client.Name,
 						Autocomplete: command + ": " + proj.Name,
 						Arg: &alfred.ItemArg{
 							Keyword: "timers",
