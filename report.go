@@ -364,7 +364,7 @@ func getSpan(arg string) (s span, err error) {
 		start := time.Now()
 		startOfWeek := cache.Account.Data.BeginningOfWeek
 		startDay := int(start.Weekday())
-		delta := startDay - startOfWeek;
+		delta := startDay - startOfWeek
 		if startDay < startOfWeek {
 			delta += 7
 		}
