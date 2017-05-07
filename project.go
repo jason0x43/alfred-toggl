@@ -246,6 +246,25 @@ func projectItems(project toggl.Project, arg string) (items []alfred.Item, err e
 		}
 	}
 
+	if isWorkspacePremium(project.Wid) && alfred.FuzzyMatches("billable:", arg) {
+		var item alfred.Item
+
+		updateEntry := project
+		updateEntry.Billable = !project.Billable
+
+		item.Title = "Billable"
+		item.Subtitle = "Update default project's billable flag"
+		item.Autocomplete = "Billable: " + alfred.Stringify(project.Billable)
+		item.Arg = &alfred.ItemArg{
+			Keyword: "projects",
+			Mode:    alfred.ModeDo,
+			Data:    alfred.Stringify(projectCfg{ToUpdate: &updateEntry}),
+		}
+		item.AddCheckBox(project.Billable)
+
+		items = append(items, item)
+	}
+
 	if alfred.FuzzyMatches("timers", arg) {
 		items = append(items, alfred.Item{
 			Title:        "Time entries...",
