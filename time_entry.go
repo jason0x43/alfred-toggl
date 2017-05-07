@@ -358,6 +358,7 @@ type timerCfg struct {
 	Timer    *int             `json:"timer,omitempty"`
 	Property *string          `json:"property,omitempty"`
 	Project  *int             `json:"project,omitempty"`
+	Billable *int             `json:"billable,omitempty"`
 	Tag      *int             `json:"tag,omitempty"`
 	ToStart  *startDesc       `json:"tostart,omitempty"`
 	ToUpdate *toggl.TimeEntry `json:"toupdate,omitempty"`
@@ -404,7 +405,8 @@ func startTimeEntry(desc startDesc) (entry toggl.TimeEntry, err error) {
 	session := toggl.OpenSession(config.APIKey)
 
 	if desc.Pid != 0 {
-		entry, err = session.StartTimeEntryForProject(desc.Description, desc.Pid)
+		project, _, _ := getProjectByID(desc.Pid)
+		entry, err = session.StartTimeEntryForProject(desc.Description, desc.Pid, project.Billable)
 	} else {
 		entry, err = session.StartTimeEntry(desc.Description)
 	}
@@ -659,6 +661,25 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 			}
 			items = append(items, item)
 		}
+	}
+
+	if alfred.FuzzyMatches("billable:", parts[0]) {
+		var item alfred.Item
+
+		updateEntry := entry.Copy()
+		updateEntry.Billable = !entry.Billable
+
+		item.Title = "Billable"
+		item.Subtitle = "Update this entry's billable condition"
+		item.Autocomplete = "Billable: " + alfred.Stringify(entry.Billable)
+		item.Arg = &alfred.ItemArg{
+			Keyword: "timers",
+			Mode:    alfred.ModeDo,
+			Data:    alfred.Stringify(timerCfg{ToUpdate: &updateEntry}),
+		}
+		item.AddCheckBox(entry.Billable)
+
+		items = append(items, item)
 	}
 
 	if alfred.FuzzyMatches("start:", parts[0]) {
