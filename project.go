@@ -246,7 +246,7 @@ func projectItems(project toggl.Project, arg string) (items []alfred.Item, err e
 		}
 	}
 
-	if alfred.FuzzyMatches("billable:", arg) {
+	if isWorkspacePremium(project.Wid) && alfred.FuzzyMatches("billable:", arg) {
 		var item alfred.Item
 
 		updateEntry := project

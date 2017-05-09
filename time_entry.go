@@ -663,7 +663,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 		}
 	}
 
-	if alfred.FuzzyMatches("billable:", parts[0]) {
+	if isWorkspacePremium(entry.Wid) && alfred.FuzzyMatches("billable:", parts[0]) {
 		var item alfred.Item
 
 		updateEntry := entry.Copy()

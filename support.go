@@ -115,6 +115,15 @@ func getClientByID(id int) (client toggl.Client, index int, found bool) {
 	return
 }
 
+func getWorkspaceByID(id int) (workspace toggl.Workspace, index int, found bool) {
+	for i, workspace := range cache.Account.Data.Workspaces {
+		if workspace.ID == id {
+			return workspace, i, true
+		}
+	}
+	return
+}
+
 func findTimersByProjectID(pid int) (entries []toggl.TimeEntry) {
 	for _, entry := range cache.Account.Data.TimeEntries[:] {
 		if entry.Pid == pid {
@@ -187,6 +196,11 @@ func getLatestTimeEntriesForProject(pid int) (matchedArr []toggl.TimeEntry) {
 
 	sort.Sort(sort.Reverse(byTime(matchedArr)))
 	return
+}
+
+func isWorkspacePremium(id int) bool {
+	workspace, _, _ := getWorkspaceByID(id)
+	return workspace.Premium
 }
 
 func projectHasTimeEntries(pid int) bool {
