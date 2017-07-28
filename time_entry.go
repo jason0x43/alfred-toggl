@@ -75,6 +75,15 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 						},
 					}
 					item.AddCheckBox(false)
+
+					item.AddMod(alfred.ModCmd, alfred.ItemMod{
+						Arg: &alfred.ItemArg{
+							Keyword: "timers",
+							Mode:    alfred.ModeDo,
+							Data:    alfred.Stringify(timerCfg{ToStart: toStart}),
+						},
+					})
+
 					items = append(items, item)
 				}
 			}
