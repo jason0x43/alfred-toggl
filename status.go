@@ -25,7 +25,7 @@ func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 
 	if err = refresh(); err != nil {
 		items = append(items, alfred.Item{
-			Title:    "Error syncing with toggle.com",
+			Title:    "Error syncing with toggl.com",
 			Subtitle: fmt.Sprintf("%v", err),
 		})
 		return
