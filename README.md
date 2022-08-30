@@ -1,6 +1,8 @@
 alfred-toggl
 ============
 
+⚠️ **Note: This workflow is no longer being actively developed, but pull requests will still be accepted.** ⚠️
+
 An Alfred workflow for accessing the Toggl time-tracking service
 
 ![Screenshot](doc/report_dates.png?raw=true)
