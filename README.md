@@ -29,15 +29,15 @@ The workflow can operate in various modes, described below. For example, the tim
 
 ### `timers`
 
-The `timers` command (`tgl timers` or `tgt`) lists all user time entries created during the last 9 days, up to 1000. Entries are listed in reverse chronological order by start time. If a timer is active, it’s icon will be green.
+The `timers` command (`tgl timers` or `tgt`) lists all user time entries created during the last 9 days, up to 1000. Entries are listed in reverse chronological order by start time. If a timer is active, its icon will be green.
 
 ![Timers list](doc/timers.png?raw=true)
 
 Actioning a time entry will show various properties for that entry, and also allow the entry to be modified or deleted. Holding `Cmd` while actioning a time entry from the list will continue the time entry (either creating a new instance of the entry or extending its duration, depending on the configured default behavior).
 
-If no entries are running, hold `Ctrl` while actioning the most recent time entry will "unstop" it. A new entry will be created with the same start time as the origina, and the original will be removed. The end result will be as if the entry had never been stopped.
+If no entries are running, hold `Ctrl` while actioning the most recent time entry will "unstop" it. A new entry will be created with the same start time as the original, and the original will be removed. The end result will be as if the entry had never been stopped.
 
-In the timer property list, actioning a property will allow it to be modifed. If the property involves selecting an option or a true/false value, a checklist of possible values will be presented. If the property is a string, number, or time, a new value can be entered directly. Pressing Enter will update the property.
+In the timer property list, actioning a property will allow it to be modified. If the property involves selecting an option or a true/false value, a checklist of possible values will be presented. If the property is a string, number, or time, a new value can be entered directly. Pressing Enter will update the property.
 
 ![Timer menu](doc/timer_properties.png?raw=true)
 
