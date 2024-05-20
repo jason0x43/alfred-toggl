@@ -61,7 +61,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 	if cfg.ToStart != nil {
 		toStart := cfg.ToStart
 		if toStart.Pid == 0 {
-			for _, proj := range cache.Account.Data.Projects {
+			for _, proj := range cache.Account.Projects {
 				if proj.IsActive() && alfred.FuzzyMatches(proj.Name, arg) {
 					toStart.Pid = proj.ID
 					item := alfred.Item{
@@ -132,7 +132,7 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 		}
 	} else {
 		// Use all time entries
-		entries = cache.Account.Data.TimeEntries
+		entries = cache.Account.TimeEntries
 		dlog.Printf("showing all %d timers", len(entries))
 	}
 
@@ -169,7 +169,9 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
-					Data:    alfred.Stringify(timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}}),
+					Data: alfred.Stringify(
+						timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}},
+					),
 				},
 			})
 
@@ -195,8 +197,10 @@ func (c TimeEntryCommand) Items(arg, data string) (items []alfred.Item, err erro
 				dlog.Printf("No duration or stop time")
 			}
 
-			if project, _, ok := getProjectByID(entry.Pid); ok {
-				item.Subtitle = "[" + project.Name + "] " + item.Subtitle
+			if entry.Pid != nil {
+				if project, _, ok := getProjectByID(*entry.Pid); ok {
+					item.Subtitle = "[" + project.Name + "] " + item.Subtitle
+				}
 			}
 
 			if entry.IsRunning() {
@@ -396,7 +400,7 @@ func deleteTimeEntry(id int) (entry toggl.TimeEntry, err error) {
 
 	session := toggl.OpenSession(config.APIKey)
 	if _, err = session.DeleteTimeEntry(entry); err == nil {
-		adata := &cache.Account.Data
+		adata := &cache.Account
 		if index < len(adata.TimeEntries)-1 {
 			adata.TimeEntries = append(adata.TimeEntries[:index], adata.TimeEntries[index+1:]...)
 		} else {
@@ -415,14 +419,19 @@ func startTimeEntry(desc startDesc) (entry toggl.TimeEntry, err error) {
 
 	if desc.Pid != 0 {
 		project, _, _ := getProjectByID(desc.Pid)
-		entry, err = session.StartTimeEntryForProject(desc.Description, desc.Pid, project.Billable)
+		entry, err = session.StartTimeEntryForProject(
+			desc.Description,
+			cache.Workspace,
+			desc.Pid,
+			project.Billable,
+		)
 	} else {
-		entry, err = session.StartTimeEntry(desc.Description)
+		entry, err = session.StartTimeEntry(desc.Description, cache.Workspace)
 	}
 
 	if err == nil {
 		dlog.Printf("Got entry: %#v\n", entry)
-		cache.Account.Data.TimeEntries = append(cache.Account.Data.TimeEntries, entry)
+		cache.Account.TimeEntries = append(cache.Account.TimeEntries, entry)
 		if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
 			dlog.Printf("Error saving cache: %s\n", err)
 		}
@@ -454,7 +463,7 @@ func toggleTimeEntry(toToggle toggleCfg) (updatedEntry toggl.TimeEntry, err erro
 		}
 	}
 
-	adata := &cache.Account.Data
+	adata := &cache.Account
 
 	if updatedEntry.ID == entry.ID {
 		adata.TimeEntries[index] = updatedEntry
@@ -489,12 +498,12 @@ func unstopTimeEntry(id int) (newEntry toggl.TimeEntry, err error) {
 
 	session := toggl.OpenSession(config.APIKey)
 	newEntry, err = session.UnstopTimeEntry(entry)
-	adata := &cache.Account.Data
+	adata := &cache.Account
 
 	if err == nil || !strings.HasPrefix(err.Error(), "New entry") {
 		// Append the new time entry
 		if newEntry.ID != 0 {
-			cache.Account.Data.TimeEntries = append(cache.Account.Data.TimeEntries, newEntry)
+			cache.Account.TimeEntries = append(cache.Account.TimeEntries, newEntry)
 		}
 	}
 
@@ -521,7 +530,7 @@ func updateTimeEntry(entryIn toggl.TimeEntry) (entry toggl.TimeEntry, err error)
 		return
 	}
 
-	adata := &cache.Account.Data
+	adata := &cache.Account
 
 	for i, e := range adata.TimeEntries {
 		if e.ID == entry.ID {
@@ -581,20 +590,27 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 				name = parts[1]
 			}
 
-			for _, proj := range cache.Account.Data.Projects {
-				client, _, _ := getClientByID(proj.Cid)
+			for _, proj := range cache.Account.Projects {
 
-				if proj.IsActive() && alfred.FuzzyMatches(proj.Name+client.Name, name) {
+				clientName := ""
+				if proj.Cid != nil {
+					client, _, _ := getClientByID(*proj.Cid)
+					clientName = client.Name
+				}
+
+				if proj.IsActive() && alfred.FuzzyMatches(proj.Name+clientName, name) {
 					updateEntry := entry.Copy()
-					if entry.Pid == proj.ID {
-						updateEntry.Pid = 0
+
+					if entry.Pid != nil && *entry.Pid == proj.ID {
+						updateEntry.Pid = nil
 					} else {
-						updateEntry.Pid = proj.ID
+						updateEntry.Pid = &proj.ID
 					}
+
 					item := alfred.Item{
 						UID:          fmt.Sprintf("%s.project.%d", workflow.BundleID(), proj.ID),
 						Title:        proj.Name,
-						Subtitle:     client.Name,
+						Subtitle:     clientName,
 						Autocomplete: command + ": " + proj.Name,
 						Arg: &alfred.ItemArg{
 							Keyword: "timers",
@@ -602,7 +618,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 							Data:    alfred.Stringify(timerCfg{ToUpdate: &updateEntry}),
 						},
 					}
-					item.AddCheckBox(entry.Pid == proj.ID)
+					item.AddCheckBox(entry.Pid != nil && *entry.Pid == proj.ID)
 					items = append(items, item)
 				}
 			}
@@ -614,11 +630,16 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 				Subtitle:     "Change the project this entry is assigned to",
 				Autocomplete: command + ": ",
 			}
-			if project, _, ok := getProjectByID(entry.Pid); ok {
-				item.Title += project.Name
+
+			if entry.Pid != nil {
+				project, _, ok := getProjectByID(*entry.Pid)
+				if ok {
+					item.Title += project.Name
+				}
 			} else {
 				item.Title += "<None>"
 			}
+
 			items = append(items, item)
 		}
 	}
@@ -633,7 +654,7 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 				tagName = parts[1]
 			}
 
-			for _, tag := range cache.Account.Data.Tags {
+			for _, tag := range cache.Account.Tags {
 				if alfred.FuzzyMatches(tag.Name, tagName) {
 					item := alfred.Item{
 						Title:        tag.Name,
@@ -811,7 +832,10 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 			updateTimer.SetDuration(round(roundedDuration * 60 * 60))
 
 			item.AddMod(alfred.ModAlt, alfred.ItemMod{
-				Subtitle: fmt.Sprintf("Round down to %s", formatDuration(round(roundedDuration*100.0))),
+				Subtitle: fmt.Sprintf(
+					"Round down to %s",
+					formatDuration(round(roundedDuration*100.0)),
+				),
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
@@ -881,7 +905,9 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
-					Data:    alfred.Stringify(timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}}),
+					Data: alfred.Stringify(
+						timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}},
+					),
 				},
 				Autocomplete: "Start",
 			}
@@ -891,7 +917,9 @@ func timeEntryItems(entry *toggl.TimeEntry, query string) (items []alfred.Item, 
 				Arg: &alfred.ItemArg{
 					Keyword: "timers",
 					Mode:    alfred.ModeDo,
-					Data:    alfred.Stringify(timerCfg{ToToggle: &toggleCfg{entry.ID, !config.DurationOnly}}),
+					Data: alfred.Stringify(
+						timerCfg{ToToggle: &toggleCfg{entry.ID, !config.DurationOnly}},
+					),
 				},
 			})
 

@@ -51,7 +51,7 @@ func (c TagCommand) Items(arg, data string) (items []alfred.Item, err error) {
 	} else {
 		tagCfg := tagCfg{}
 
-		for _, entry := range cache.Account.Data.Tags {
+		for _, entry := range cache.Account.Tags {
 			if alfred.FuzzyMatches(entry.Name, arg) {
 				tagCfg.Tag = &entry.ID
 
@@ -110,10 +110,10 @@ func (c TagCommand) Do(data string) (out string, err error) {
 	if cfg.ToCreate != nil {
 		var tag toggl.Tag
 		if cfg.ToCreate.WID == 0 {
-			cfg.ToCreate.WID = cache.Account.Data.Workspaces[0].ID
+			cfg.ToCreate.WID = cache.Account.Workspaces[0].ID
 		}
 		if tag, err = session.CreateTag(cfg.ToCreate.Name, cfg.ToCreate.WID); err == nil {
-			cache.Account.Data.Tags = append(cache.Account.Data.Tags, tag)
+			cache.Account.Tags = append(cache.Account.Tags, tag)
 			if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
 				log.Printf("Error saving cache: %s\n", err)
 			}
@@ -137,7 +137,7 @@ func (c TagCommand) Do(data string) (out string, err error) {
 		}
 
 		if _, err = session.DeleteTag(tag); err == nil {
-			adata := &cache.Account.Data
+			adata := &cache.Account
 			if index < len(adata.Tags)-1 {
 				adata.Tags = append(adata.Tags[:index], adata.Tags[index+1:]...)
 			} else {
