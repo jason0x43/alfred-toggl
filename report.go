@@ -179,7 +179,11 @@ func createReportMenuItem(s span) (item alfred.Item) {
 	return
 }
 
-func createReportItems(arg, data string, cfg *reportCfg, span span) (items []alfred.Item, err error) {
+func createReportItems(
+	arg, data string,
+	cfg *reportCfg,
+	span span,
+) (items []alfred.Item, err error) {
 	projectID := -1
 	if cfg.Project != nil {
 		projectID = *cfg.Project
@@ -362,7 +366,7 @@ func getSpan(arg string) (s span, err error) {
 		s.Name = "week"
 		s.Label = "this week"
 		start := time.Now()
-		startOfWeek := cache.Account.Data.BeginningOfWeek
+		startOfWeek := cache.Account.BeginningOfWeek
 		startDay := int(start.Weekday())
 		delta := startDay - startOfWeek
 		if startDay < startOfWeek {
@@ -411,7 +415,11 @@ func getSpan(arg string) (s span, err error) {
 	return
 }
 
-func generateReport(since, until time.Time, projectID int, entryTitle string) (*summaryReport, error) {
+func generateReport(
+	since, until time.Time,
+	projectID int,
+	entryTitle string,
+) (*summaryReport, error) {
 	dlog.Printf("Generating report from %s to %s for %d", since, until, projectID)
 
 	report := summaryReport{
@@ -420,11 +428,11 @@ func generateReport(since, until time.Time, projectID int, entryTitle string) (*
 	}
 	projects := getProjectsByID()
 
-	for _, entry := range cache.Account.Data.TimeEntries {
+	for _, entry := range cache.Account.TimeEntries {
 		start := entry.StartTime()
 
 		if !start.Before(since) && !until.Before(start) {
-			if projectID != -1 && entry.Pid != projectID {
+			if projectID != -1 && entry.Pid != nil && *entry.Pid != projectID {
 				continue
 			}
 
@@ -434,17 +442,22 @@ func generateReport(since, until time.Time, projectID int, entryTitle string) (*
 
 			var projectName string
 
-			if entry.Pid == 0 {
+			if entry.Pid == nil {
 				projectName = "<No project>"
 			} else {
-				proj, _ := projects[entry.Pid]
+				proj, _ := projects[*entry.Pid]
 				projectName = proj.Name
 			}
 
 			if _, ok := report.projects[projectName]; !ok {
+				id := 0
+				if entry.Pid != nil {
+					id = *entry.Pid
+				}
+
 				report.projects[projectName] = &projectEntry{
 					name:    projectName,
-					id:      entry.Pid,
+					id:      id,
 					entries: map[string]*timeEntry{}}
 			}
 

@@ -5,6 +5,8 @@ github.com/jason0x43/go-alfred v0.0.0-20200121151032-9ea6c1f3044f h1:rWpPnXoLVER
 github.com/jason0x43/go-alfred v0.0.0-20200121151032-9ea6c1f3044f/go.mod h1:CYIoOjM+7oq5n2FyO4ChtHwfbkYeCK4J6QvW2B+p/DU=
 github.com/jason0x43/go-toggl v0.0.0-20210518224841-9af0e37bf5f1 h1:W2mydbDZq4Yn10h/EXULkfsM6tR4KOQbyu+5oxriTnM=
 github.com/jason0x43/go-toggl v0.0.0-20210518224841-9af0e37bf5f1/go.mod h1:f3LrObBTMa7Yh1QzNvHKazJjH3Ys8n95y9bwLoIFy/g=
+github.com/jason0x43/go-toggl v0.0.0-20240528025633-4e5873a36db2 h1:f4OwJlJCmoSRFBH2WRjKtEsTkHFvwXm+ausc2SUDQVo=
+github.com/jason0x43/go-toggl v0.0.0-20240528025633-4e5873a36db2/go.mod h1:f3LrObBTMa7Yh1QzNvHKazJjH3Ys8n95y9bwLoIFy/g=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -35,7 +35,7 @@ var workflow alfred.Workflow
 
 func main() {
 	if !alfred.IsDebugging() {
-		dlog.SetOutput(ioutil.Discard)
+		dlog.SetOutput(io.Discard)
 		dlog.SetFlags(0)
 	}
 

@@ -49,17 +49,21 @@ func (c ProjectCommand) Items(arg, data string) (items []alfred.Item, err error)
 	} else {
 		projectCfg := projectCfg{}
 
-		for _, entry := range cache.Account.Data.Projects {
+		for _, entry := range cache.Account.Projects {
 
-			client, _, _ := getClientByID(entry.Cid)
+			clientName := ""
+			if entry.Cid != nil {
+				client, _, _ := getClientByID(*entry.Cid)
+				clientName = client.Name
+			}
 
-			if entry.IsActive() && alfred.FuzzyMatches(entry.Name+client.Name, arg) {
+			if entry.IsActive() && alfred.FuzzyMatches(entry.Name+clientName, arg) {
 				projectCfg.Project = &entry.ID
 
 				item := alfred.Item{
 					UID:          fmt.Sprintf("%s.project.%d", workflow.BundleID(), entry.ID),
 					Title:        entry.Name,
-					Subtitle:     client.Name,
+					Subtitle:     clientName,
 					Autocomplete: entry.Name,
 					Icon:         "off.png",
 					Arg: &alfred.ItemArg{
@@ -68,7 +72,7 @@ func (c ProjectCommand) Items(arg, data string) (items []alfred.Item, err error)
 					},
 				}
 
-				if isRunning && runningTimer.Pid == entry.ID {
+				if isRunning && runningTimer.Pid != nil && *runningTimer.Pid == entry.ID {
 					item.Icon = "running.png"
 				}
 
@@ -156,11 +160,11 @@ func createProject(msg *createProjectMessage) (project toggl.Project, err error)
 	session := toggl.OpenSession(config.APIKey)
 
 	if msg.WID == 0 {
-		msg.WID = cache.Account.Data.Workspaces[0].ID
+		msg.WID = cache.Account.Workspaces[0].ID
 	}
 
 	if project, err = session.CreateProject(msg.Name, msg.WID); err == nil {
-		cache.Account.Data.Projects = append(cache.Account.Data.Projects, project)
+		cache.Account.Projects = append(cache.Account.Projects, project)
 		if err := alfred.SaveJSON(cacheFile, &cache); err != nil {
 			dlog.Printf("Error saving cache: %s\n", err)
 		}
@@ -176,7 +180,7 @@ func updateProject(p *toggl.Project) (project toggl.Project, err error) {
 		return
 	}
 
-	adata := &cache.Account.Data
+	adata := &cache.Account
 
 	for i, p := range adata.Projects {
 		if p.ID == project.ID {
@@ -246,11 +250,14 @@ func projectItems(project toggl.Project, arg string) (items []alfred.Item, err e
 		}
 	}
 
-	if isWorkspacePremium(project.Wid) && alfred.FuzzyMatches("billable:", arg) {
+	if isWorkspacePremium(project.Wid) && project.Billable != nil &&
+		alfred.FuzzyMatches("billable:", arg) {
 		var item alfred.Item
 
 		updateEntry := project
-		updateEntry.Billable = !project.Billable
+
+		newBillable := !*project.Billable
+		updateEntry.Billable = &newBillable
 
 		item.Title = "Billable"
 		item.Subtitle = "Update default project's billable flag"
@@ -260,7 +267,7 @@ func projectItems(project toggl.Project, arg string) (items []alfred.Item, err e
 			Mode:    alfred.ModeDo,
 			Data:    alfred.Stringify(projectCfg{ToUpdate: &updateEntry}),
 		}
-		item.AddCheckBox(project.Billable)
+		item.AddCheckBox(*project.Billable)
 
 		items = append(items, item)
 	}

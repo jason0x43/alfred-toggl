@@ -40,8 +40,10 @@ func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 		subtitle := fmt.Sprintf("%s, started %s at %s",
 			formatDuration(round(duration*100.0)), date, time)
 
-		if project, _, ok := getProjectByID(entry.Pid); ok {
-			subtitle = "[" + project.Name + "] " + subtitle
+		if entry.Pid != nil {
+			if project, _, ok := getProjectByID(*entry.Pid); ok {
+				subtitle = "[" + project.Name + "] " + subtitle
+			}
 		}
 
 		item := alfred.Item{
@@ -58,7 +60,9 @@ func (c StatusFilter) Items(arg, data string) (items []alfred.Item, err error) {
 			Arg: &alfred.ItemArg{
 				Keyword: "timers",
 				Mode:    alfred.ModeDo,
-				Data:    alfred.Stringify(timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}}),
+				Data: alfred.Stringify(
+					timerCfg{ToToggle: &toggleCfg{entry.ID, config.DurationOnly}},
+				),
 			},
 		})
 
